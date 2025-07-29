@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 
 const router = Router();
 
-// POST /signup - User registration without file upload
+// POST /signup
 router.post("/signup", async (req, res) => {
   try {
     const { email, username, password } = req.body;
@@ -29,7 +29,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// POST /login - Standard local authentication
+// POST /login 
 router.post(
   "/login",
   passport.authenticate("local", { failureMessage: true, session: false }),
@@ -67,12 +67,11 @@ router.post("/logout", (req, res) => {
   });
 });
 
-// GET /me - Get details of the currently authenticated user
+// GET /me - Get details of current user
 router.get(
   "/me",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    // req.user contains the user object from the JWT strategy
     if (req.user) {
       res.json({
         _id: req.user._id,
@@ -85,7 +84,7 @@ router.get(
   }
 );
 
-// --- Email and Google Auth (Unchanged) ---
+//email auth
 
 const transporter = nodemailer.createTransport({
   service: "gmail",

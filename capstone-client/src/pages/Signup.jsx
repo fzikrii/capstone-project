@@ -1,7 +1,41 @@
-import React from "react";
+import React, {useState} from "react";
 import { Link } from 'react-router-dom';
 
-const Signup = () => {
+const Signup = ({ setView }) => {
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('Signup successful! You are now logged in.');
+        // In a real app, you'd redirect: window.location.href = '/dashboard';
+      } else {
+        setMessage(data.message || 'Signup failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      setMessage('An error occurred during signup.');
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${BACKEND_URL}/auth/google`;
+  };
+
+  
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left side for simple animation */}
@@ -79,6 +113,17 @@ const Signup = () => {
               Sign Up
             </button>
           </form>
+
+          <div className="my-6 flex items-center">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="mx-4 text-sm text-gray-500">OR</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+        
+        <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors">
+          <img className="w-5 h-5 mr-3" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google icon" />
+          Sign up with Google
+        </button>
 
           <div className="text-center mt-6 text-sm text-[#0B1C47]">
             Already have an account?{" "}

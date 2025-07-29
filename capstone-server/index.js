@@ -47,7 +47,7 @@ app.use("/auth", userRouter); // <-- your login/signup
 
 // Root endpoint
 app.get("/", (req, res) => {
-  res.send({ message: "Welcome to Kada-ch2 API" });
+  res.send({ message: "Capstone server started" });
 });
 
 // Error handler

@@ -1,11 +1,8 @@
-<<<<<<< HEAD
+
 import React , {useState} from "react";
 import { Link } from 'react-router-dom';
-=======
-import React from "react";
-import { Link } from "react-router-dom";
 import bgwave from "../assets/bgwave.png";
->>>>>>> a0c2b060a6a4176b4758ddec4af7bcdd03c30b37
+
 
 const Login = () => {
   const [email, setEmail] = useState('');

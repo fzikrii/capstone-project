@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import React , {useState} from "react";
 import { Link } from 'react-router-dom';
+=======
+import React from "react";
+import { Link } from "react-router-dom";
+import bgwave from "../assets/bgwave.png";
+>>>>>>> a0c2b060a6a4176b4758ddec4af7bcdd03c30b37
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -41,11 +47,21 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left side for simple animation */}
-      <div className="w-full md:w-1/2 bg-[#0B1C47] text-white flex flex-col items-center justify-center p-8">
-        <div className="text-center px-6">
+      {/* Left side with background image */}
+      <div className="w-full md:w-1/2 relative overflow-hidden bg-[#0B1C47] flex items-center justify-center p-8">
+        {/* Img */}
+        <div
+          className="absolute inset-0 transform scale-110 z-0"
+          style={{
+            backgroundImage: `url(${bgwave})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+
+        {/* Text and Animation */}
+        <div className="relative z-10 text-center px-6 text-white">
           <h1 className="text-4xl font-bold mb-4">Welcome to CodeName</h1>
-          {/* Animation */}
           <div className="mt-8 flex justify-center space-x-4">
             <span className="w-4 h-4 bg-sky-400 rounded-full animate-ping"></span>
             <span className="w-4 h-4 bg-sky-300 rounded-full animate-pulse"></span>
@@ -55,7 +71,7 @@ const Login = () => {
       </div>
 
       {/* Right side for login form */}
-      <div className="w-full md:w-1/2 bg-[#EAF7FF] flex items-center justify-center p-6">
+      <div className="w-full md:w-1/2 bg-gradient-to-b from-blue-100 to-white flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-xl">
           <h2 className="text-3xl font-bold text-[#0B1C47] text-center mb-6">
             Login to Your Account

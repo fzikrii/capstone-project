@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import React, {useState} from "react";
 import { Link } from 'react-router-dom';
+=======
+import React from "react";
+import { Link } from "react-router-dom";
+import bgwave from "../assets/bgwave.png";
+>>>>>>> a0c2b060a6a4176b4758ddec4af7bcdd03c30b37
 
 const Signup = ({ setView }) => {
   const [displayName, setDisplayName] = useState('');
@@ -38,14 +44,24 @@ const Signup = ({ setView }) => {
   
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left side for simple animation */}
-      <div className="w-full md:w-1/2 bg-[#0B1C47] text-white flex flex-col items-center justify-center p-8">
-        <div className="text-center px-6">
+      {/* Left side with background image */}
+      <div className="w-full md:w-1/2 relative overflow-hidden bg-[#0B1C47] flex items-center justify-center p-8">
+        {/* Background image layer */}
+        <div
+          className="absolute inset-0 transform scale-110 z-0"
+          style={{
+            backgroundImage: `url(${bgwave})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+
+        {/* Content */}
+        <div className="relative z-10 text-center px-6 text-white">
           <h1 className="text-4xl font-bold mb-4">Join CodeName</h1>
-          <p className="text-sky-300 max-w-md mx-auto">
+          <p className="text-white max-w-md mx-auto">
             Create your account and unlock opportunities, achievements, and skill development.
           </p>
-
           <div className="mt-8 flex justify-center space-x-4">
             <span className="w-4 h-4 bg-sky-400 rounded-full animate-ping"></span>
             <span className="w-4 h-4 bg-sky-300 rounded-full animate-pulse"></span>
@@ -55,7 +71,7 @@ const Signup = ({ setView }) => {
       </div>
 
       {/* Right side for signup form */}
-      <div className="w-full md:w-1/2 bg-[#EAF7FF] flex items-center justify-center p-8">
+      <div className="w-full md:w-1/2 bg-gradient-to-b from-blue-100 to-white flex items-center justify-center p-8">
         <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-xl">
           <h2 className="text-3xl font-bold text-[#0B1C47] text-center mb-6">
             Create an Account
@@ -71,7 +87,7 @@ const Signup = ({ setView }) => {
               <input
                 type="text"
                 id="name"
-                className="mt-1 w-full px-4 py-2 border border-gray-300  rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="Your Name"
                 required
               />
@@ -86,7 +102,7 @@ const Signup = ({ setView }) => {
               <input
                 type="email"
                 id="email"
-                className="mt-1 w-full px-4 py-2 border border-gray-300  rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="you@gmail.com"
                 required
               />
@@ -101,8 +117,23 @@ const Signup = ({ setView }) => {
               <input
                 type="password"
                 id="password"
-                className="mt-1 w-full px-4 py-2 border border-gray-300  rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="Create a strong password"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-[#0B1C47]"
+              >
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                id="confirm-password"
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
+                placeholder="Re-enter your password"
                 required
               />
             </div>

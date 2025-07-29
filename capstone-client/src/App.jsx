@@ -21,13 +21,21 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Landing from './pages/Landing';
+import Howtouse from './pages/Howtouse';
+import Schedule from './pages/Schedule';
+import BountyBoard from './pages/Bountyboard';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/howtouse" element={<Howtouse/>}/>
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/bountyboard" element={<BountyBoard />} />
       </Routes>
     </Router>
   );

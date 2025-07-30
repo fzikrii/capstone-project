@@ -17,30 +17,51 @@
 
 // export default App
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Landing from './pages/Landing';
-import Howtouse from './pages/Howtouse';
+import Projectboard from './pages/Projectboard';
 import Schedule from './pages/Schedule';
-import BountyBoard from './pages/Bountyboard';
+import Bountyboard from './pages/Bountyboard';
+import Howtouse from './pages/Howtouse';
+import Landing from './pages/Landing';
 
 function App() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const handleToggleDarkMode = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/howtouse" element={<Howtouse/>}/>
         <Route path="/schedule" element={<Schedule />} />
-        <Route path="/bountyboard" element={<BountyBoard />} />
+        <Route path="/bountyboard" element={<Bountyboard />} />
+        <Route path="/howtouse" element={<Howtouse />} />
+        <Route path="/" element={<Landing />} />
+        <Route
+          path="/projectboard"
+          element={<Projectboard
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={handleToggleDarkMode}
+          />}
+        />
       </Routes>
     </Router>
   );
 }
 
 export default App;
-
 

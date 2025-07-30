@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import bgwave from "../assets/bgwave.png";
+import { Link } from 'react-router-dom';
 
 
 const Signup = ({ setView }) => {

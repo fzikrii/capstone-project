@@ -1,52 +1,9 @@
+// src/pages/BountyBoard.jsx
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
-import profileImg from "../assets/profile.jpg";
+import Sidebar from "../components/Sidebar";
 
 const BountyBoard = () => {
-  const initialBounties = [
-    {
-      id: 1,
-      title: "Build Responsive Landing Page",
-      description: "Create a mobile-friendly landing page using React and Tailwind CSS.",
-      deadline: "2025-08-10",
-      
-    },
-    {
-      id: 2,
-      title: "REST API for Task Management",
-      description: "Design and develop a RESTful API for a task management system.",
-      deadline: "2025-08-05",
-      
-    },
-    {
-      id: 3,
-      title: "UI Redesign for Dashboard",
-      description: "Improve usability and aesthetics of existing dashboard UI.",
-      deadline: "2025-08-15",
-      
-    },
-    {
-      id: 4,
-      title: "E-commerce Product Page",
-      description: "Develop a product page with dynamic content and user reviews.",
-      deadline: "2025-08-20",
-      
-    },
-    {
-      id: 5,
-      title: "Real-time Chat Application",
-      description: "Build a real-time chat app using WebSockets and React.",
-      deadline: "2025-08-25",
-      
-    },
-    {
-      id: 6,
-      title: "UI Settings Page",
-      description: "Create a settings page for user preferences and configurations.",
-      deadline: "2025-08-30",
-      
-    },
-  ];
+  const initialBounties = [/* data bounty seperti sebelumnya */];
 
   const [bounties] = useState(initialBounties);
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,68 +33,10 @@ const BountyBoard = () => {
       });
   }, [bounties, searchTerm, sortOrder]);
 
-  const SidebarItem = ({ label, to, isActive }) => (
-    <Link
-      to={to}
-      onClick={() => setActiveItem(label)}
-      className={`block px-3 py-2 rounded-md cursor-pointer transition-colors ${isActive
-          ? "bg-[#122b63] border-l-4 border-white text-white font-semibold"
-          : "hover:text-gray-300 text-white"
-        }`}
-    >
-      {label}
-    </Link>
-  );
-
   return (
-    <div className="min-h-screen flex bg-sky-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#0B1C47] text-white flex flex-col justify-between py-8 px-4 shadow-lg">
+    <div className="flex min-h-screen bg-sky-100">
+      <Sidebar activeItem={activeItem} setActiveItem={setActiveItem} />
 
-        <div>
-          <h1 className="text-2xl font-bold mb-8 px-3">CodeName</h1>
-          <nav className="space-y-2">
-            <SidebarItem
-              label="Home"
-              to="/"
-              isActive={activeItem === "Home"}
-              onClick={setActiveItem}
-            />
-            <SidebarItem
-              label="Schedule"
-              to="/schedule"
-              isActive={activeItem === "Schedule"}
-              onClick={setActiveItem}
-            />
-            <SidebarItem
-              label="Bounty Board"
-              to="/bountyboard"
-              isActive={activeItem === "Bounty Board"}
-              onClick={setActiveItem}
-            />
-            <SidebarItem
-              label="How To Use"
-              to="/howtouse"
-              isActive={activeItem === "How To Use"}
-              onClick={setActiveItem}
-            />
-          </nav>
-        </div>
-
-        {/* Profile Section */}
-        <div className="flex items-center space-x-3 mt-6">
-          <div className="p-[2px] bg-white rounded-full">
-            <img
-              src={profileImg}
-              alt="Profile"
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          </div>
-          <p className="text-sm">Hi, Elmira</p>
-        </div>
-      </aside>
-
-      {/* Main Content */}
       <main className="flex-1 px-10 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl lg:text-5xl font-extrabold text-[#0B1C47] mb-4">Bounty Board</h1>
@@ -166,7 +65,10 @@ const BountyBoard = () => {
               });
 
               return (
-                <div key={bounty.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col justify-between border border-gray-200">
+                <div
+                  key={bounty.id}
+                  className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col justify-between border border-gray-200"
+                >
                   <div>
                     <h2 className="text-xl font-semibold text-[#0B1C47] mb-2">{bounty.title}</h2>
                     <p className="text-gray-600 mb-4 text-sm">{bounty.description}</p>

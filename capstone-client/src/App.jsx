@@ -25,6 +25,8 @@ import Landing from './pages/Landing';
 import Howtouse from './pages/Howtouse';
 import Schedule from './pages/Schedule';
 import BountyBoard from './pages/Bountyboard';
+import InboxMessages from './pages/Inboxmesseges';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
         <Route path="/howtouse" element={<Howtouse/>}/>
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/bountyboard" element={<BountyBoard />} />
+        <Route path="/inboxmesseges" element={<InboxMessages />} />`
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </Router>
   );

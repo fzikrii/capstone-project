@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGODB_CONNECTION_STRING, {
+  .connect(process.env.MONGODB_URI, {
     dbName: process.env.DATABASE_NAME,
   })
   .then(() => console.log("MongoDB connected"))

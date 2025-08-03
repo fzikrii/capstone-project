@@ -1,10 +1,11 @@
 
 import React , {useState} from "react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import bgwave from "../assets/bgwave.png";
 
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -26,8 +27,7 @@ const Login = () => {
 
       if (response.ok) {
         setMessage(`Welcome, ${data.user.displayName}! Login successful.`);
-        // Here you would typically redirect the user or update the app state
-        // For example: window.location.href = '/dashboard';
+        navigate("/dashboard");
       } else {
         setMessage(data.message || 'Login failed. Please check your credentials.');
       }
@@ -69,7 +69,7 @@ const Login = () => {
           <h2 className="text-3xl font-bold text-[#0B1C47] text-center mb-6">
             Login to Your Account
           </h2>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleLocalLogin} >
             <div>
               <label
                 htmlFor="email"
@@ -80,6 +80,8 @@ const Login = () => {
               <input
                 type="email"
                 id="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="you@gmail.com"
                 required
@@ -95,6 +97,8 @@ const Login = () => {
               <input
                 type="password"
                 id="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="••••••••"
                 required

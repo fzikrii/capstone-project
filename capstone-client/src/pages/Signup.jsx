@@ -1,11 +1,12 @@
 import React, {useState} from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import bgwave from "../assets/bgwave.png";
 
 const BACKEND_URL = 'http://localhost:5000';
 
-
+//
 const Signup = ({ setView }) => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,8 +25,8 @@ const Signup = ({ setView }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('Signup successful! You are now logged in.');
-        // In a real app, you'd redirect: window.location.href = '/dashboard';
+        setMessage('Signup successful! Redirecting...');
+        setTimeout(() => navigate("/dashboard"), 1000);
       } else {
         setMessage(data.message || 'Signup failed. Please try again.');
       }

@@ -37,10 +37,6 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // This redirects the user to the backend route for Google authentication
-    window.location.href = `${BACKEND_URL}/auth/google/callback`;
-  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -112,13 +108,14 @@ const Login = () => {
             </button>
           </form>
 
+          <a href="http://localhost:5000/auth/login/google">
           <button
-            onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <img className="w-5 h-5 mr-3" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google icon" />
             Sign in with Google
           </button>
+          </a>
 
           <div className="text-center mt-6 text-sm text-[#0B1C47]">
             Don’t have an account?{" "}

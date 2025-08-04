@@ -125,6 +125,7 @@ router.get(
       res.json({ message: "Google login successful!" });
     } else {
       res.status(401).json({ message: "Google authentication failed." });
+      res.redirect('/dashboard');
     }
   }
 );

@@ -1,10 +1,13 @@
 import React, {useState} from "react";
+import { Link } from "react-router-dom";
 import bgwave from "../assets/bgwave.png";
 import { Link } from 'react-router-dom';
 
+const BACKEND_URL = 'http://localhost:5000';
+
 
 const Signup = ({ setView }) => {
-  const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -16,7 +19,7 @@ const Signup = ({ setView }) => {
       const response = await fetch(`${BACKEND_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName, email, password }),
+        body: JSON.stringify({ username, email, password }),
       });
 
       const data = await response.json();
@@ -72,7 +75,7 @@ const Signup = ({ setView }) => {
           <h2 className="text-3xl font-bold text-[#0B1C47] text-center mb-6">
             Create an Account
           </h2>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSignup}>
             <div>
               <label
                 htmlFor="name"
@@ -83,6 +86,8 @@ const Signup = ({ setView }) => {
               <input
                 type="text"
                 id="name"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="Your Name"
                 required
@@ -98,6 +103,8 @@ const Signup = ({ setView }) => {
               <input
                 type="email"
                 id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="you@gmail.com"
                 required
@@ -113,6 +120,8 @@ const Signup = ({ setView }) => {
               <input
                 type="password"
                 id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="Create a strong password"
                 required

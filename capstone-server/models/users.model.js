@@ -1,39 +1,21 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-//User Schema Definition, contains input n stuff
-const UserSchema = new Schema({
-    username: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        match: [/.*@.*\..*/, "Please fill a valid email form"]
-    },
-    password: {
-        type: String
-    },
-    isAdmin: {
-        type: Boolean
-    },
-    registerType: {
-        type: String,
-        enum: ["normal", "google"],
-        default: "normal"
-    },
-    profileImageUrl: String,
-    socialId: String,
-    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }]
-})
-UserSchema.pre("save", async function() {
-    if (this.password && this.isNew || this.isModified("password")) {
-        this.password = await bcrypt.hash(this.password, 10)
-    }
-})
+// User Schema Definition
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email:    { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
 
-const User = mongoose.model("User", UserSchema);
+// Pre-save hook to hash the password before saving (optional, if not hashed in route)
+userSchema.pre("save", async function(next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+
+const User = mongoose.model("User", userSchema);
 
 export default User;

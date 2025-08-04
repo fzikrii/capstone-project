@@ -122,10 +122,10 @@ router.get(
       const payload = { _id: req.user._id };
       const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
       res.cookie("token", token, { httpOnly: true });
-      res.json({ message: "Google login successful!" });
+      res.redirect('http://localhost:5173/dashboard');
     } else {
       res.status(401).json({ message: "Google authentication failed." });
-      res.redirect('/dashboard');
+      res.redirect('/login');
     }
   }
 );

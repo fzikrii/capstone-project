@@ -57,7 +57,7 @@ const Signup = ({ setView }) => {
 
         {/* Content */}
         <div className="relative z-10 text-center px-6 text-white">
-          <h1 className="text-4xl font-bold mb-4">Join CodeName</h1>
+          <h1 className="text-4xl font-bold mb-4">Join Eagle.Eye</h1>
           <p className="text-white max-w-md mx-auto">
             Create your account and unlock opportunities, achievements, and skill development.
           </p>

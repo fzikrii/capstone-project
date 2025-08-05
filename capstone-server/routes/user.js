@@ -32,7 +32,7 @@ router.post("/signup", async (req, res) => {
 // POST /login 
 router.post(
   "/login",
-  passport.authenticate("local", { failureMessage: true, session: false }),
+  passport.authenticate("local", { session: false }),
   (req, res) => {
     if (req.user) {
       const { _id, username } = req.user;

@@ -14,19 +14,21 @@ const config = {
 }
 
 passport.use(
-        new LocalStrategy(config, async function(email, password, done) {
-            const user = await User.findOne({ email })
-
-            if (!user)
-                return done(null, false, { message: "user not found" })
-
-            const compareResult = await bcrypt.compare(password, user.password)
-            if (!compareResult)
-                return done(null, false, { message: "Invalid password" })
-
-            return done(null, user)
-        })
-    )
+  new LocalStrategy(
+    { usernameField: "email" }, // use email for login
+    async (email, password, done) => {
+      try {
+        const user = await User.findOne({ email });
+        if (!user) return done(null, false, { message: "User not found" });
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) return done(null, false, { message: "Incorrect password" });
+        return done(null, user);
+      } catch (err) {
+        return done(err);
+      }
+    }
+  )
+);
     
 const jwtOption = {
     jwtFromRequest: ExtractJwt.fromExtractors([

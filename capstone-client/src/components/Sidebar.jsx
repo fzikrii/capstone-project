@@ -17,6 +17,15 @@ const Sidebar = ({ isOpen }) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) return;
+        fetch(`http://localhost:5000/auth/user/${userId}`)
+            .then(res => res.json())
+            .then(data => setUserData(data))
+            .catch(err => console.error("Failed to fetch user data:", err));
+    }, []);
+
     // "Inbox" has been removed from this list
     const navLinks = [
         { name: 'Dashboard', icon: 'layout', path: '/dashboard' },
@@ -37,21 +46,24 @@ const Sidebar = ({ isOpen }) => {
 
                 <div className="p-4 relative" ref={profileRef}>
                     <div onClick={() => setProfileOpen(!isProfileOpen)} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">
-                        <img src="https://placehold.co/40x40/a7f3d0/14532d?text=AS" alt="User Avatar" className="w-10 h-10 rounded-full object-cover" />
+                        <img
+                            src={userData?.avatarUrl || "https://placehold.co/40x40/a7f3d0/14532d?text=AS"}
+                            alt="User Avatar"
+                            className="w-10 h-10 rounded-full object-cover"
+                        />
                         <div>
-                            <p className="font-semibold text-sm text-slate-700">Jonathan Ezra</p>
-                            <p className="text-xs text-slate-500">Project Manager</p>
+                            <p className="font-semibold text-sm text-slate-700">{userData?.username || "Loading..."}</p>
+                            <p className="text-xs text-slate-500">{userData?.role || "Project Member"}</p>
                         </div>
                         <Icon name="chevron-down" className="w-4 h-4 ml-auto text-slate-400" />
                     </div>
                     {isProfileOpen && (
-                    <div className="absolute top-full left-4 right-4 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-30 animate-fade-in-down">
-                        {/* 👇 UBAH BARIS INI 👇 */}
-                        <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100"><Icon name="user" className="w-4 h-4" />View Profile</Link>
-                        <hr className="my-1 border-slate-200" />
-                        <Link to="/login" className="flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50"><Icon name="log-out" className="w-4 h-4" />Logout</Link>
-                    </div>
-                )}
+                        <div className="absolute top-full left-4 right-4 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-30 animate-fade-in-down">
+                            <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100"><Icon name="user" className="w-4 h-4" />View Profile</Link>
+                            <hr className="my-1 border-slate-200" />
+                            <Link to="/login" className="flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50"><Icon name="log-out" className="w-4 h-4" />Logout</Link>
+                        </div>
+                    )}
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1">
@@ -68,7 +80,6 @@ const Sidebar = ({ isOpen }) => {
                 </nav>
 
                 <div className="p-4 border-t border-slate-200">
-                    {/* The main Settings link at the bottom has been removed */}
                     <Link to="/howtouse" className="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
                         <Icon name="help-circle" className="w-5 h-5 text-slate-500" />
                         <span>FAQ</span>

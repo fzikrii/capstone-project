@@ -26,6 +26,8 @@ import Howtouse from './pages/Howtouse';
 import Schedule from './pages/Schedule';
 import BountyBoard from './pages/Bountyboard';
 import Dashboard from './pages/Dashboard';
+import MyProjects from './pages/Myprojects';
+import NotFound from './pages/Notfound';
 
 function App() {
   return (
@@ -34,10 +36,12 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/howtouse" element={<Howtouse/>}/>
+        <Route path="/howtouse" element={<Howtouse />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/bountyboard" element={<BountyBoard />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/myprojects" element={<MyProjects />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

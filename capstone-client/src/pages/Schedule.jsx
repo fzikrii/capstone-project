@@ -1,167 +1,207 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import profileImg from "../assets/profile.jpg";
+import React, { useState, useMemo } from 'react';
+import Sidebar from '../components/Sidebar';
+import Icon from '../components/Icon';
+
+
+// --- Data Jadwal (diletakkan di luar komponen) ---
+const allEvents = {
+    '2025-08-01': [{ id: 1, title: 'API Key Issue', color: 'bg-rose-500' }],
+    '2025-08-03': [{ id: 2, title: 'Develop Homepage', color: 'bg-amber-500' }],
+    '2025-08-05': [{ id: 3, title: 'Design Mockups', color: 'bg-sky-500' }],
+    '2025-08-08': [{ id: 4, title: 'User Auth Setup', color: 'bg-sky-500' }],
+    '2025-09-10': [{ id: 5, title: 'Meeting with Client', color: 'bg-green-500' }],
+};
+
+const formatDateKey = (date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+// --- KOMPONEN ---
+
+const CalendarEvent = ({ event }) => (
+    <div className={`p-1 text-xs font-semibold rounded-md text-white ${event.color} mb-1 truncate`}>
+        {event.title}
+    </div>
+);
+
+const CalendarDay = ({ day, onClick }) => {
+    const dayClass = day.isCurrentMonth ? 'text-slate-700' : 'text-slate-400';
+    const todayClass = day.isToday ? 'bg-sky-500 text-white' : 'hover:bg-slate-100';
+
+    return (
+        <div
+            className={`border border-slate-200 h-28 p-2 flex flex-col transition-colors ${day.isCurrentMonth ? 'cursor-pointer' : ''}`}
+            onClick={() => day.isCurrentMonth && onClick(day)}
+        >
+            <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold ${dayClass} ${todayClass}`}>
+                {day.date}
+            </span>
+            <div className="mt-1 flex-1 overflow-y-auto pr-1">
+                {day.events.map(event => <CalendarEvent key={event.id} event={event} />)}
+            </div>
+        </div>
+    );
+};
+
+const ScheduleModal = ({ day, onClose }) => {
+    if (!day) return null;
+
+    const fullDateStr = day.fullDate.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white rounded-xl shadow-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                <div className="p-6 border-b border-slate-200">
+                    <h3 className="text-lg font-bold text-slate-800">Jadwal untuk {fullDateStr}</h3>
+                </div>
+                <div className="p-6 min-h-[100px]">
+                    {day.events.length > 0 ? (
+                        <ul className="space-y-3">
+                            {day.events.map(event => (
+                                <li key={event.id} className="flex items-center gap-3">
+                                    <span className={`w-3 h-3 rounded-full ${event.color}`}></span>
+                                    <span className="text-slate-700">{event.title}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-slate-500 text-center">Tidak ada jadwal pada hari ini. ✨</p>
+                    )}
+                </div>
+                 <div className="p-4 bg-slate-50 rounded-b-xl text-right">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-300 transition-colors"
+                    >
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const Schedule = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeItem, setActiveItem] = useState("Schedule");
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDay, setSelectedDay] = useState(null);
 
-  const handlePrevMonth = () => {
-    const prev = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
-    setCurrentDate(prev);
-  };
+    const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+    const closeModal = () => setSelectedDay(null);
+    const handleDayClick = (day) => setSelectedDay(day);
 
-  const handleNextMonth = () => {
-    const next = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
-    setCurrentDate(next);
-  };
+    const handlePrevMonth = () => {
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    };
 
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+    const handleNextMonth = () => {
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    };
+    
+    const handleGoToToday = () => {
+        setCurrentDate(new Date());
+    };
 
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+    const calendarDays = useMemo(() => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June", "July",
-    "August", "September", "October", "November", "December"
-  ];
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
 
-  const daysInMonth = getDaysInMonth(currentDate);
-  const firstDay = getFirstDayOfMonth(currentDate);
+        const days = [];
+        
+        const startDayOfWeek = firstDayOfMonth.getDay();
+        const prevMonthLastDay = new Date(year, month, 0).getDate();
+        for (let i = startDayOfWeek; i > 0; i--) {
+            const date = prevMonthLastDay - i + 1;
+            const fullDate = new Date(year, month - 1, date);
+            fullDate.setHours(0,0,0,0);
+            days.push({ date, fullDate, isCurrentMonth: false, isToday: false, events: [] });
+        }
 
-  const dummyTasks = {
-    2: ["Project 1"],
-    5: ["Project 2"],
-    8: ["Project 3"],
-    10: ["Project 4"],
-    12: ["Project 5"],
-    15: ["Project 6"],
-    20: ["Project 7"],
-    25: ["Project 8"],
-    30: ["Project 9"],
-  };
+        for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+            const fullDate = new Date(year, month, i);
+            fullDate.setHours(0,0,0,0);
+            const dateKey = formatDateKey(fullDate);
+            
+            const isToday = fullDate.getTime() === today.getTime();
+            
+            days.push({ date: i, fullDate, isCurrentMonth: true, isToday, events: allEvents[dateKey] || [] });
+        }
+        
+        const totalSlots = days.length > 35 ? 42 : 35;
+        const remainingSlots = totalSlots - days.length;
+        for (let i = 1; i <= remainingSlots; i++) {
+            const fullDate = new Date(year, month + 1, i);
+            fullDate.setHours(0,0,0,0);
+            days.push({ date: i, fullDate, isCurrentMonth: false, isToday: false, events: [] });
+        }
 
-  const SidebarItem = ({ label, to, isActive, onClick }) => (
-    <Link
-      to={to}
-      onClick={() => onClick(label)}
-      className={`block px-3 py-2 rounded-md cursor-pointer transition-colors ${
-        isActive
-          ? "bg-[#122b63] border-l-4 border-white text-white font-semibold"
-          : "hover:text-gray-300 text-white"
-      }`}
-    >
-      {label}
-    </Link>
-  );
+        return days;
+    }, [currentDate]);
 
-  return (
-    <div className="min-h-screen flex bg-sky-100 relative">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#0B1C47] text-white flex flex-col justify-between py-8 px-4 shadow-lg">
-        <div>
-          <h1 className="text-2xl font-bold mb-8 px-3">CodeName</h1>
+    const daysOfWeek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
-          {/* Navigation */}
-          <nav className="space-y-2 mb-12">
-            <SidebarItem
-              label="Home"
-              to="/"
-              isActive={activeItem === "Home"}
-              onClick={setActiveItem}
-            />
-            <SidebarItem
-              label="Schedule"
-              to="/schedule"
-              isActive={activeItem === "Schedule"}
-              onClick={setActiveItem}
-            />
-            <SidebarItem
-              label="Bounty Board"
-              to="/bountyboard"
-              isActive={activeItem === "Bounty Board"}
-              onClick={setActiveItem}
-            />
-            <SidebarItem
-              label="How To Use"
-              to="/howtouse"
-              isActive={activeItem === "How To Use"}
-              onClick={setActiveItem}
-            />
-          </nav>
-        </div>
-
-        {/* Profile Section */}
-        <div className="mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-[2px] bg-white rounded-full">
-              <img
-                src={profileImg}
-                alt="Profile"
-                className="w-10 h-10 rounded-full object-cover"
-              />
+    return (
+        <div className="flex h-screen bg-slate-50 font-sans">
+            <Sidebar isOpen={isSidebarOpen} />
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-20 p-4 border-b border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button onClick={toggleSidebar} className="lg:hidden p-2 rounded-md hover:bg-slate-200">
+                            <Icon name="menu" className="w-6 h-6" />
+                        </button>
+                        <h1 className="text-2xl font-bold text-slate-800">Schedule</h1>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={handleGoToToday} 
+                            className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors"
+                        >
+                            Today
+                        </button>
+                        <button onClick={handlePrevMonth} className="p-2 rounded-full hover:bg-slate-100">
+                           <Icon name="chevron-left" className="w-6 h-6 text-slate-600" />
+                        </button>
+                        <button onClick={handleNextMonth} className="p-2 rounded-full hover:bg-slate-100">
+                           <Icon name="chevron-right" className="w-6 h-6 text-slate-600" />
+                        </button>
+                    </div>
+                </header>
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="flex justify-center items-center mb-4">
+                            <h2 className="text-xl font-bold text-slate-800 w-48 text-center capitalize">
+                                {currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-7 text-center font-semibold text-slate-500">
+                            {daysOfWeek.map(day => <div key={day} className="py-2">{day}</div>)}
+                        </div>
+                        <div className="grid grid-cols-7">
+                            {calendarDays.map((day, i) => <CalendarDay key={i} day={day} onClick={handleDayClick} />)}
+                        </div>
+                    </div>
+                </main>
             </div>
-            <p className="text-sm">Hi, Elmira</p>
-          </div>
+            {isSidebarOpen && <div onClick={toggleSidebar} className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"></div>}
+            
+            <ScheduleModal day={selectedDay} onClose={closeModal} />
         </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 px-6 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <button onClick={handlePrevMonth} className="text-[#0B1C47] font-bold hover:underline">← Prev</button>
-          <h2 className="text-3xl font-semibold text-[#0B1C47] text-center">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h2>
-          <button onClick={handleNextMonth} className="text-[#0B1C47] font-bold hover:underline">Next →</button>
-        </div>
-
-        {/* Day's Label */}
-        <div className="grid grid-cols-7 gap-2 text-sm text-gray-600 font-medium mb-4">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-            <div key={day} className="bg-[#0B1C47] rounded-md shadow text-center py-2 text-white">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-4">
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="bg-transparent"></div>
-          ))}
-
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const tasks = dummyTasks[day] || [];
-
-            return (
-              <div
-                key={day}
-                className="bg-white rounded-xl shadow p-3 min-h-[120px] flex flex-col justify-between hover:shadow-lg transition duration-300"
-              >
-                <div className="text-right text-sm text-[#0B1C47] font-bold">{day}</div>
-                <ul className="mt-2 space-y-1">
-                  {tasks.length > 0 ? (
-                    tasks.map((task, idx) => (
-                      <li key={idx} className="text-xs text-gray-700 bg-green-300 border border-blue-200 rounded px-2 py-1">
-                        {task}
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-xs text-gray-400 italic">No tasks</li>
-                  )}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Schedule;

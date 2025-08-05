@@ -27,6 +27,7 @@ const Login = () => {
 
       if (response.ok) {
         setMessage(`Welcome, ${data.user.displayName}! Login successful.`);
+        localStorage.setItem("userId", data.user._id);
         navigate("/dashboard");
       } else {
         setMessage(data.message || 'Login failed. Please check your credentials.');

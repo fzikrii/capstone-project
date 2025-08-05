@@ -6,7 +6,9 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email:    { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  tasks:    [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }]
+  tasks:    [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+  ownedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }],
+  memberProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }]
 });
 
 // Pre-save hook to hash the password before saving (optional, if not hashed in route)

@@ -5,6 +5,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
 import userRouter from "./routes/user.js";
+import projectRouter from "./routes/project.js";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ mongoose
 
 // Routes
 app.use("/auth", userRouter); // <-- your login/signup
+app.use("/project", projectRouter); // <-- your project management
 
 // Root endpoint
 app.get("/", (req, res) => {

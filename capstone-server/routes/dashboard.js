@@ -1,6 +1,6 @@
 import { Router } from "express";
-import Project from "../models/project.model.js";
-import Task from "../models/task.model.js";
+import Project from "../models/projects.model.js";
+import Task from "../models/tasks.model.js";
 import User from "../models/users.model.js";
 
 const router = Router();

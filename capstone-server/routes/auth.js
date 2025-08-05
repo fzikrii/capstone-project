@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
     }
 
     // For simplicity, just return success (add JWT/session in production)
-    res.status(200).json({ message: 'Login successful.' });
+    res.status(200).json({ message: 'Login successful.', user: { _id: user._id, displayName: user.username } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error.' });

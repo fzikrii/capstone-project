@@ -4,10 +4,12 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Projectboard from './pages/Projectboard';
 import Schedule from './pages/Schedule';
-import Bountyboard from './pages/Bountyboard';
 import Howtouse from './pages/Howtouse';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
+import Bountyboard from './pages/Bountyboard';
+import MyProjects from './pages/Myprojects';
+import NotFound from './pages/Notfound';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -36,13 +38,8 @@ function App() {
         <Route path="/projectboard" element={<Projectboard />} />
         <Route path="/howtouse" element={<Howtouse />} />
         <Route path="/" element={<Landing />} />
-        <Route
-          path="/projectboard"
-          element={<Projectboard
-            isDarkMode={isDarkMode}
-            onToggleDarkMode={handleToggleDarkMode}
-          />}
-        />
+        <Route path="/myprojects" element={<MyProjects />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

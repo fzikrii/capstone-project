@@ -1,396 +1,162 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import Icon from "../components/Icon";
+import React, { useState, useMemo } from 'react';
+import Sidebar from '../components/Sidebar';
+import Icon from '../components/Icon';
 
-// --- Initial Project Data ---
-const initialProjectsData = {
-  ToDo: [
-    {
-      id: 3,
-      title: "Q3 Marketing Campaign",
-      description: "Plan and execute the marketing campaign for Q3.",
-      progress: 10,
-      startDate: "2025-08-10",
-      endDate: "2025-08-20",
-      team: [
-        "https://placehold.co/40x40/fecaca/991b1b?text=FZ",
-        "https://placehold.co/40x40/fed7aa/9a3412?text=ER",
-      ],
-    },
-    {
-      id: 5,
-      title: "Initial Research for AI Tool",
-      description: "Feasibility study for a new AI feature.",
-      progress: 0,
-      startDate: "2025-08-05",
-      endDate: "2025-08-15",
-      team: ["https://placehold.co/40x40/a7f3d0/14532d?text=EA"],
-    },
-  ],
-  Ongoing: [
-    {
-      id: 1,
-      title: "Website Redesign",
-      description: "Complete overhaul of the main company website.",
-      progress: 75,
-      startDate: "2025-08-03",
-      endDate: "2025-09-15",
-      team: [
-        "https://placehold.co/40x40/a7f3d0/14532d?text=EA",
-        "https://placehold.co/40x40/fecaca/991b1b?text=FZ",
-        "https://placehold.co/40x40/bae6fd/0c4a6e?text=ER",
-      ],
-    },
-  ],
-  Done: [
-    {
-      id: 2,
-      title: "Mobile App Launch",
-      description: "Develop and launch the new iOS and Android app.",
-      progress: 100,
-      startDate: "2025-06-10",
-      endDate: "2025-07-25",
-      team: [
-        "https://placehold.co/40x40/a7f3d0/14532d?text=FZ",
-        "https://placehold.co/40x40/c7d2fe/3730a3?text=ER",
-      ],
-    },
-  ],
-  Stuck: [
-    {
-      id: 4,
-      title: "API Integration",
-      description: "Integrate third-party payment API.",
-      progress: 90,
-      startDate: "2025-07-20",
-      endDate: "2025-08-01",
-      team: [
-        "https://placehold.co/40x40/bae6fd/0c4a6e?text=EA",
-        "https://placehold.co/40x40/c7d2fe/3730a3?text=ER",
-        "https://placehold.co/40x40/fed7aa/9a3412?text=FZ",
-      ],
-    },
-  ],
+const initialTasks = {
+    ToDo: [
+        { id: 1, title: 'Design landing page mockups', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'High', dueDate: '2025-08-05', assignees: ['https://placehold.co/40x40/a7f3d0/14532d?text=AS'] },
+        { id: 2, title: 'Setup user authentication flow', project: 'Mobile App', projectColor: 'bg-purple-100 text-purple-700', priority: 'High', dueDate: '2025-08-08', assignees: ['https://placehold.co/40x40/c7d2fe/3730a3?text=DM'] },
+    ],
+    Ongoing: [
+        { id: 3, title: 'Develop homepage component', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'Medium', dueDate: '2025-08-03', assignees: ['https://placehold.co/40x40/bae6fd/0c4a6e?text=CJ'] },
+    ],
+    Done: [
+        { id: 4, title: 'Finalize color palette', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'Low', dueDate: '2025-07-28', assignees: ['https://placehold.co/40x40/fecaca/991b1b?text=BD'] },
+        { id: 6, title: 'Write documentation for API endpoints', project: 'API Integration', projectColor: 'bg-green-100 text-green-700', priority: 'Medium', dueDate: '2025-08-12', assignees: ['https://placehold.co/40x40/bae6fd/0c4a6e?text=CJ', 'https://placehold.co/40x40/fed7aa/9a3412?text=EK'] },
+    ],
+    Stuck: [
+        { id: 5, title: 'API key for payment gateway is not working', project: 'API Integration', projectColor: 'bg-green-100 text-green-700', priority: 'High', dueDate: '2025-08-01', assignees: ['https://placehold.co/40x40/fed7aa/9a3412?text=EK'] },
+        { id: 7, title: 'Create social media assets', project: 'Q3 Marketing', projectColor: 'bg-orange-100 text-orange-700', priority: 'Low', dueDate: '2025-08-01', assignees: ['https://placehold.co/40x40/fecaca/991b1b?text=BD'] },
+    ]
 };
 
-// --- Component for Kanban Card Display ---
-const ProjectKanbanCard = ({ project, onDragStart }) => (
-  <div
-    draggable
-    onDragStart={(e) => onDragStart(e, project._id)}
-    className="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mb-3 cursor-grab active:cursor-grabbing"
-  >
-    <h4 className="font-semibold text-slate-800 mb-2">{project.title}</h4>
-    <div className="flex justify-between items-center text-sm text-slate-500">
-      <span>Due: {project.endDate}</span>
-      <div className="flex -space-x-2">
-        {project.team.map((avatar, index) => (
-          <img
-            key={index}
-            className="w-6 h-6 rounded-full border-2 border-white object-cover"
-            src={avatar}
-            alt={`Team member ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  </div>
-);
+const TaskCard = ({ task, onDragStart }) => {
+    const priorityClasses = {
+        High: 'bg-rose-500',
+        Medium: 'bg-amber-500',
+        Low: 'bg-emerald-500',
+    };
+    return (
+        <div
+            draggable
+            onDragStart={(e) => onDragStart(e, task.id)}
+            className="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mb-3 cursor-grab active:cursor-grabbing"
+        >
+            <div className="flex justify-between items-start mb-2">
+                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${task.projectColor}`}>{task.project}</span>
+                <span className={`w-3 h-3 rounded-full ${priorityClasses[task.priority]}`} title={`Priority: ${task.priority}`}></span>
+            </div>
+            <p className="font-semibold text-slate-800 mb-3">{task.title}</p>
+            <div className="flex justify-between items-center text-sm text-slate-500">
+                <span>Due: {task.dueDate}</span>
+                <div className="flex -space-x-2">
+                    {task.assignees.map((avatar, index) => (
+                        <img key={index} className="w-6 h-6 rounded-full border-2 border-white object-cover" src={avatar} alt={`assignee ${index + 1}`} />
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
 
-const BoardColumn = ({
-  title,
-  projects,
-  color,
-  status,
-  onDrop,
-  onDragOver,
-}) => (
-  <div
-    onDrop={(e) => onDrop(e, status)}
-    onDragOver={onDragOver}
-    className="bg-slate-100 rounded-xl p-3 w-80 flex-shrink-0"
-  >
-    <h3
-      className={`font-bold text-lg mb-4 px-2 text-${color}-600 flex items-center gap-2`}
+const TaskBoardColumn = ({ title, tasks, color, onDrop, onDragOver }) => (
+    <div
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        className="bg-slate-100 rounded-xl p-3 w-80 flex-shrink-0"
     >
-      <span className={`w-3 h-3 rounded-full bg-${color}-500`}></span>
-      {title}
-      <span className="text-sm text-slate-400 font-medium">
-        {projects.length}
-      </span>
-    </h3>
-    <div className="h-full overflow-y-auto pr-1">
-      {projects.map((project) => (
-        <ProjectKanbanCard
-          key={project.id}
-          project={project}
-          onDragStart={(e, projectId) =>
-            e.dataTransfer.setData("projectId", projectId)
-          }
-        />
-      ))}
+        <h3 className={`font-bold text-lg mb-4 px-2 text-${color}-600 flex items-center gap-2`}>
+            <span className={`w-3 h-3 rounded-full bg-${color}-500`}></span>
+            {title}
+            <span className="text-sm text-slate-400 font-medium">{tasks.length}</span>
+        </h3>
+        <div className="h-full overflow-y-auto pr-1">
+            {tasks.map(task => <TaskCard key={task.id} task={task} onDragStart={(e, taskId) => e.dataTransfer.setData("taskId", taskId)} />)}
+        </div>
     </div>
-  </div>
 );
 
 const MyProjects = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [projects, setProjects] = useState(initialProjectsData);
-  const [showModal, setShowModal] = useState(false);
-  const [newProject, setNewProject] = useState({
-    title: "",
-    description: "",
-    endDate: "",
-    status: "ToDo",
-    team: [],
-  });
-  const [editProject, setEditProject] = useState(null);
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [tasks, setTasks] = useState(initialTasks);
+    const [searchTerm, setSearchTerm] = useState("");
 
-  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+    const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
-  const userId = localStorage.getItem("userId");
+    const handleDrop = (e, targetStatus) => {
+        const taskId = parseInt(e.dataTransfer.getData("taskId"));
+        
+        let sourceStatus;
+        let draggedTask;
 
-  const handleCreateProject = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch("http://localhost:5000/project", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...newProject,
-          owner: userId,
-        }),
-      });
-      const created = await response.json();
-      setProjects((prev) => ({
-        ...prev,
-        [created.status || "ToDo"]: [
-          ...prev[created.status || "ToDo"],
-          { ...created, id: created._id },
-        ],
-      }));
-      setShowModal(false);
-      setNewProject({
-        title: "",
-        description: "",
-        endDate: "",
-        status: "ToDo",
-        team: [],
-      });
-    } catch (err) {
-      console.error("Failed to create project:", err);
-    }
-  };
+        // Find the task and its original column
+        for (const status in tasks) {
+            const task = tasks[status].find(t => t.id === taskId);
+            if (task) {
+                sourceStatus = status;
+                draggedTask = task;
+                break;
+            }
+        }
 
-  useEffect(() => {
-    if (!userId) return;
-
-    fetch(`http://localhost:5000/project/user/${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        // Group projects by status
-        const grouped = { ToDo: [], Ongoing: [], Done: [], Stuck: [] };
-        data.forEach((project) => {
-          const status = project.status || "ToDo";
-          if (grouped[status]) {
-            grouped[status].push({
-              ...project,
-              id: project._id, // Use MongoDB _id as id
+        if (draggedTask && sourceStatus !== targetStatus) {
+            setTasks(prevTasks => {
+                // Remove from source column
+                const newSourceTasks = prevTasks[sourceStatus].filter(t => t.id !== taskId);
+                // Add to target column
+                const newTargetTasks = [...prevTasks[targetStatus], draggedTask];
+                
+                return {
+                    ...prevTasks,
+                    [sourceStatus]: newSourceTasks,
+                    [targetStatus]: newTargetTasks
+                };
             });
-          }
-        });
-        setProjects(grouped);
-      })
-      .catch((err) => console.error("Failed to fetch projects:", err));
-  }, [userId]);
+        }
+    };
 
-  const handleDrop = async (e, targetStatus) => {
-    const projectId = e.dataTransfer.getData("projectId"); // Use string
+    const handleDragOver = (e) => {
+        e.preventDefault(); // Necessary to allow dropping
+    };
 
-    let sourceStatus;
-    let draggedProject;
+    const filteredTasks = useMemo(() => {
+        if (!searchTerm) return tasks;
+        const lowercasedFilter = searchTerm.toLowerCase();
+        const filtered = {};
+        for (const status in tasks) {
+            filtered[status] = tasks[status].filter(task =>
+                task.title.toLowerCase().includes(lowercasedFilter) ||
+                task.project.toLowerCase().includes(lowercasedFilter)
+            );
+        }
+        return filtered;
+    }, [tasks, searchTerm]);
 
-    // Find the project and its source column
-    for (const status in projects) {
-      const project = projects[status].find((p) => p.id === projectId);
-      if (project) {
-        sourceStatus = status;
-        draggedProject = project;
-        break;
-      }
-    }
-
-    if (draggedProject && sourceStatus !== targetStatus) {
-      setProjects((prevProjects) => {
-        // Remove from source column
-        const newSourceProjects = prevProjects[sourceStatus].filter(
-          (p) => p.id !== projectId
-        );
-        // Add to target column
-        const newTargetProjects = [
-          ...prevProjects[targetStatus],
-          { ...draggedProject, status: targetStatus },
-        ];
-
-        return {
-          ...prevProjects,
-          [sourceStatus]: newSourceProjects,
-          [targetStatus]: newTargetProjects,
-        };
-      });
-
-      // Optional: Update backend
-      try {
-        await fetch(`http://localhost:5000/project/${projectId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: targetStatus }),
-        });
-      } catch (error) {
-        console.error("Failed to update project status:", error);
-      }
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault(); // Required for drop to work
-  };
-
-  {
-    showModal && (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <form
-          className="bg-white p-6 rounded-lg shadow-lg w-96"
-          onSubmit={handleCreateProject}
-        >
-          <h2 className="text-xl font-bold mb-4">Create New Project</h2>
-          <input
-            className="w-full mb-2 p-2 border rounded"
-            placeholder="Title"
-            value={newProject.title}
-            onChange={(e) =>
-              setNewProject({ ...newProject, title: e.target.value })
-            }
-            required
-          />
-          <textarea
-            className="w-full mb-2 p-2 border rounded"
-            placeholder="Description"
-            value={newProject.description}
-            onChange={(e) =>
-              setNewProject({ ...newProject, description: e.target.value })
-            }
-          />
-          <input
-            className="w-full mb-2 p-2 border rounded"
-            type="date"
-            value={newProject.endDate}
-            onChange={(e) =>
-              setNewProject({ ...newProject, endDate: e.target.value })
-            }
-            required
-          />
-          <select
-            className="w-full mb-2 p-2 border rounded"
-            value={newProject.status}
-            onChange={(e) =>
-              setNewProject({ ...newProject, status: e.target.value })
-            }
-          >
-            <option value="ToDo">To Do</option>
-            <option value="Ongoing">Ongoing</option>
-            <option value="Done">Done</option>
-            <option value="Stuck">Stuck</option>
-          </select>
-          <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              className="px-4 py-2 bg-gray-300 rounded"
-              onClick={() => setShowModal(false)}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-sky-500 text-white rounded"
-            >
-              Create
-            </button>
-          </div>
-        </form>
-      </div>
+    return (
+        <div className="flex h-screen bg-slate-50">
+            <Sidebar isOpen={isSidebarOpen} />
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 p-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+                    <div className="flex items-center gap-4">
+                        <button onClick={toggleSidebar} className="lg:hidden p-2 rounded-md hover:bg-slate-200"><Icon name="menu" className="w-6 h-6" /></button>
+                        <h1 className="text-2xl font-bold text-slate-800">My Projects</h1>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="text"
+                            placeholder="Search tasks..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full max-w-xs px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        />
+                        <button className="flex items-center gap-2 bg-sky-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-sky-600 transition-colors text-sm">
+                            <Icon name="plus" className="w-5 h-5" />
+                            <span>New Task</span>
+                        </button>
+                    </div>
+                </header>
+                <main className="flex-1 flex overflow-x-auto overflow-y-hidden p-4 sm:p-6 lg:p-8">
+                    <div className="flex gap-6 h-full">
+                        <TaskBoardColumn title="To Do" tasks={filteredTasks.ToDo} color="sky" onDrop={(e) => handleDrop(e, 'ToDo')} onDragOver={handleDragOver} />
+                        <TaskBoardColumn title="Ongoing" tasks={filteredTasks.Ongoing} color="amber" onDrop={(e) => handleDrop(e, 'Ongoing')} onDragOver={handleDragOver} />
+                        <TaskBoardColumn title="Done" tasks={filteredTasks.Done} color="emerald" onDrop={(e) => handleDrop(e, 'Done')} onDragOver={handleDragOver} />
+                        <TaskBoardColumn title="Stuck" tasks={filteredTasks.Stuck} color="rose" onDrop={(e) => handleDrop(e, 'Stuck')} onDragOver={handleDragOver} />
+                    </div>
+                </main>
+            </div>
+            {isSidebarOpen && <div onClick={toggleSidebar} className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"></div>}
+        </div>
     );
-  }
-
-  return (
-    <div className="flex h-screen bg-slate-50">
-      <Sidebar isOpen={isSidebarOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 p-4 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleSidebar}
-              className="lg:hidden p-2 rounded-md hover:bg-slate-200"
-            >
-              <Icon name="menu" className="w-6 h-6" />
-            </button>
-            <h1 className="text-2xl font-bold text-slate-800">My Projects</h1>
-          </div>
-          <button
-            className="flex items-center gap-2 bg-sky-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-sky-600 transition-colors text-sm"
-            onClick={() => setShowModal(true)}
-          >
-            <Icon name="plus" className="w-5 h-5" />
-            <span>New Project</span>
-          </button>
-        </header>
-
-        <main className="flex-1 flex overflow-x-auto overflow-y-hidden p-4 sm:p-6 lg:p-8">
-          <div className="flex gap-6 h-full">
-            <BoardColumn
-              title="To Do"
-              projects={projects.ToDo}
-              color="sky"
-              status="ToDo"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-            />
-            <BoardColumn
-              title="Ongoing"
-              projects={projects.Ongoing}
-              color="amber"
-              status="Ongoing"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-            />
-            <BoardColumn
-              title="Done"
-              projects={projects.Done}
-              color="emerald"
-              status="Done"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-            />
-            <BoardColumn
-              title="Stuck"
-              projects={projects.Stuck}
-              color="rose"
-              status="Stuck"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-            />
-          </div>
-        </main>
-      </div>
-      {isSidebarOpen && (
-        <div
-          onClick={toggleSidebar}
-          className="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden"
-        ></div>
-      )}
-    </div>
-  );
 };
 
 export default MyProjects;

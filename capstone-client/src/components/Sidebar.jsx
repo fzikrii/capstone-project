@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen }) => {
 
                 <div className="p-4 relative" ref={profileRef}>
                     <div onClick={() => setProfileOpen(!isProfileOpen)} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">
-                        <img src="https://placehold.co/40x40/a7f3d0/14532d?text=AS" alt="User Avatar" className="w-10 h-10 rounded-full object-cover" />
+                        <img src="https://placehold.co/40x40/a7f3d0/14532d?text=JE" alt="User Avatar" className="w-10 h-10 rounded-full object-cover" />
                         <div>
                             <p className="font-semibold text-sm text-slate-700">Jonathan Ezra</p>
                             <p className="text-xs text-slate-500">Project Manager</p>

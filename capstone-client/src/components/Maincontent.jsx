@@ -20,10 +20,6 @@ const MainContent = ({ onToggleSidebar }) => {
                     </button>
                     <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-                    <button className="px-3 py-1 text-sm font-semibold text-slate-500 rounded-md hover:bg-white hover:text-sky-600 transition-all">Daily</button>
-                    <button className="px-3 py-1 text-sm font-semibold bg-white text-sky-600 shadow-sm rounded-md transition-all">Monthly</button>
-                </div>
             </header>
 
             <div className="p-4 sm:p-6 lg:p-8 space-y-8">

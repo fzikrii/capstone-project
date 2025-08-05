@@ -36,7 +36,12 @@ const Dashboard = () => {
                 userData={userData}
                 recentProjects={recentProjects}
             />
-            {isSidebarOpen && <div onClick={toggleSidebar} className="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden"></div>}
+            {isSidebarOpen && (
+                <div
+                    onClick={toggleSidebar}
+                    className="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden"
+                ></div>
+            )}
         </div>
     );
 };

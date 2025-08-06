@@ -62,7 +62,7 @@ This project is being built using the following technologies:
 * **Authentication:** Passport.js with Google OAuth 2.0
 * **Tools:** Git, GitHub, VS Code
   
-👥 Contributors
+## 👥 Contributors
 <p align="left">
 <a href="https://github.com/EmmAI03"><img src="https://github.com/EmmAI03.png" width="80" height="80" style="border-radius: 50%;" alt="EmmAI03"/></a>
 &nbsp;&nbsp;

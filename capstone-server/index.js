@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
-import userRouter from "./routes/user.js";
+import authRouter from "./routes/auth.js";
 import projectRouter from "./routes/project.js";
 
 dotenv.config();
@@ -14,7 +14,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Explicitly allow frontend origin
+    origin: true , // Explicitly allow frontend origin
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE"], // Allow common HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
@@ -44,7 +44,7 @@ mongoose
   });
 
 // Routes
-app.use("/auth", userRouter); // <-- your login/signup
+app.use("/auth", authRouter); // <-- your login/signup
 app.use("/project", projectRouter); // <-- your project management
 
 // Root endpoint

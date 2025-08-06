@@ -26,7 +26,7 @@ const Signup = ({ setView }) => {
 
       if (response.ok) {
         setMessage('Signup successful! Redirecting...');
-        setTimeout(() => navigate("/dashboard"), 1000);
+        setTimeout(() => navigate("/login"), 1000);
       } else {
         setMessage(data.message || 'Signup failed. Please try again.');
       }

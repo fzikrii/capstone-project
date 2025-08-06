@@ -23,6 +23,7 @@ const Sidebar = ({ isOpen }) => {
         { name: 'My Projects', icon: 'briefcase', path: '/Myprojects' }, // Example path
         { name: 'Bounty Board', icon: 'award', path: '/bountyboard' },
         { name: 'Schedule', icon: 'calendar', path: '/schedule' },
+        { name: 'FAQ', icon: 'help-circle', path: '/howtouse' }
     ];
 
     return (
@@ -66,14 +67,6 @@ const Sidebar = ({ isOpen }) => {
                         );
                     })}
                 </nav>
-
-                <div className="p-4 border-t border-slate-200">
-                    {/* The main Settings link at the bottom has been removed */}
-                    <Link to="/howtouse" className="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
-                        <Icon name="help-circle" className="w-5 h-5 text-slate-500" />
-                        <span>FAQ</span>
-                    </Link>
-                </div>
             </div>
         </aside>
     );

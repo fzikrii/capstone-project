@@ -79,7 +79,7 @@ const HowToUse = () => {
                         <button onClick={toggleSidebar} className="lg:hidden p-2 rounded-md hover:bg-slate-200">
                             <Icon name="menu" className="w-6 h-6" />
                         </button>
-                        <h1 className="text-2xl font-bold text-slate-800">How To Use / FAQ</h1>
+                        <h1 className="text-2xl font-bold text-slate-800">Frequently Ask Question </h1>
                     </div>
                 </header>
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">

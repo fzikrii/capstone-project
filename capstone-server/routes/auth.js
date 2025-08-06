@@ -59,8 +59,12 @@ router.get("/signup", (req, res) => {
 
 // POST /auth/login
 router.post('/login', async (req, res) => {
+  console.log('Login route hit');
+  console.log('Request body:', req.body);
+  
   const { email, password } = req.body;
   if (!email || !password) {
+    console.log('Missing credentials:', { email: !!email, password: !!password });
     return res.status(400).json({ message: 'Email and password are required.' });
   }
 

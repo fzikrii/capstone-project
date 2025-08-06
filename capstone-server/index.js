@@ -14,7 +14,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: true , // Explicitly allow frontend origin
+    origin: ["http://localhost:5173", "http://localhost:3000"], // Explicitly list allowed origins
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE"], // Allow common HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
@@ -26,6 +26,11 @@ app.use(express.static("public"));
 
 // JWT Passport Middleware
 app.use((req, res, next) => {
+  // Skip authentication for login and signup routes
+  if (req.path.startsWith('/auth/login') || req.path.startsWith('/auth/signup')) {
+    return next();
+  }
+  
   if (!req.cookies["token"]) {
     return next();
   }

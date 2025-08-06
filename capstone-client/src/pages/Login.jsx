@@ -98,7 +98,7 @@ const Login = () => {
           }}
         />
         <div className="relative z-10 text-center px-6 text-white">
-          <h1 className="text-4xl font-bold mb-4">Welcome to CodeName</h1>
+          <h1 className="text-4xl font-bold mb-4">Welcome to Eagle.Eye</h1>
           <div className="mt-8 flex justify-center space-x-4">
             <span className="w-4 h-4 bg-sky-400 rounded-full animate-ping"></span>
             <span className="w-4 h-4 bg-sky-300 rounded-full animate-pulse"></span>

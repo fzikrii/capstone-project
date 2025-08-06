@@ -4,7 +4,7 @@ import Icon from '../components/Icon';
 
 // --- Data ---
 const initialBounties = [
-    { id: 1, title: 'Real-time Chat Application', description: 'Build a real-time chat app using WebSockets and React.', tags: [{ name: 'Socket.io', color: 'bg-sky-100 text-sky-700' }, { name: 'WebSocket', color: 'bg-blue-100 text-blue-700' }, { name: 'Realtime', color: 'bg-green-100 text-green-700' }], dueDate: '2025-08-25' },
+    { id: 1, title: 'Real-time Chat Application', description: 'Build a real-time chat app using WebSockets and React.', tags: [{ name: 'Socket.io', color: 'bg-sky-100 text-sky-700' }, { name: 'WebSocket', color: 'bg-blue-100 text-blue-700' }, { name: 'Realtime', color: 'bg-green-100 text-green-700' }], achievement: 350, dueDate: '2025-08-25' },
     { id: 2, title: 'Build Responsive Landing Page', description: 'Create a mobile-friendly landing page using React and Tailwind CSS.', tags: [{ name: 'React', color: 'bg-cyan-100 text-cyan-700' }, { name: 'Tailwind', color: 'bg-teal-100 text-teal-700' }, { name: 'Frontend', color: 'bg-indigo-100 text-indigo-700' }], dueDate: '2025-08-10' },
     { id: 3, title: 'E-commerce Product Page', description: 'Develop a product page with dynamic content and user reviews.', tags: [{ name: 'React', color: 'bg-cyan-100 text-cyan-700' }, { name: 'API', color: 'bg-purple-100 text-purple-700' }, { name: 'Design', color: 'bg-pink-100 text-pink-700' }], dueDate: '2025-08-20' },
     { id: 4, title: 'REST API for Task Management', description: 'Design and develop a RESTful API for a task management system.', tags: [{ name: 'Node.js', color: 'bg-lime-100 text-lime-700' }, { name: 'Express', color: 'bg-gray-200 text-gray-700' }, { name: 'Backend', color: 'bg-stone-200 text-stone-700' }], dueDate: '2025-08-05' },

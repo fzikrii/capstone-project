@@ -4,19 +4,19 @@ import Icon from '../components/Icon';
 
 const initialTasks = {
     ToDo: [
-        { id: 1, title: 'Design landing page mockups', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'High', dueDate: '2025-08-05', assignees: ['https://placehold.co/40x40/a7f3d0/14532d?text=AS'] },
-        { id: 2, title: 'Setup user authentication flow', project: 'Mobile App', projectColor: 'bg-purple-100 text-purple-700', priority: 'High', dueDate: '2025-08-08', assignees: ['https://placehold.co/40x40/c7d2fe/3730a3?text=DM'] },
+        { id: 1, title: 'Design landing page mockups', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'High', dueDate: '2025-08-05', assignees: ['https://placehold.co/40x40/a7f3d0/14532d?text=FZ'] },
+        { id: 2, title: 'Setup user authentication flow', project: 'Mobile App', projectColor: 'bg-purple-100 text-purple-700', priority: 'High', dueDate: '2025-08-08', assignees: ['https://placehold.co/40x40/c7d2fe/3730a3?text=EA'] },
     ],
     Ongoing: [
-        { id: 3, title: 'Develop homepage component', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'Medium', dueDate: '2025-08-03', assignees: ['https://placehold.co/40x40/bae6fd/0c4a6e?text=CJ'] },
+        { id: 3, title: 'Develop homepage component', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'Medium', dueDate: '2025-08-03', assignees: ['https://placehold.co/40x40/bae6fd/0c4a6e?text=ER'] },
     ],
     Done: [
-        { id: 4, title: 'Finalize color palette', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'Low', dueDate: '2025-07-28', assignees: ['https://placehold.co/40x40/fecaca/991b1b?text=BD'] },
-        { id: 6, title: 'Write documentation for API endpoints', project: 'API Integration', projectColor: 'bg-green-100 text-green-700', priority: 'Medium', dueDate: '2025-08-12', assignees: ['https://placehold.co/40x40/bae6fd/0c4a6e?text=CJ', 'https://placehold.co/40x40/fed7aa/9a3412?text=EK'] },
+        { id: 4, title: 'Finalize color palette', project: 'Website Redesign', projectColor: 'bg-blue-100 text-blue-700', priority: 'Low', dueDate: '2025-07-28', assignees: ['https://placehold.co/40x40/fecaca/991b1b?text=ER'] },
+        { id: 6, title: 'Write documentation for API endpoints', project: 'API Integration', projectColor: 'bg-green-100 text-green-700', priority: 'Medium', dueDate: '2025-08-12', assignees: ['https://placehold.co/40x40/bae6fd/0c4a6e?text=FZ', 'https://placehold.co/40x40/fed7aa/9a3412?text=EA'] },
     ],
     Stuck: [
-        { id: 5, title: 'API key for payment gateway is not working', project: 'API Integration', projectColor: 'bg-green-100 text-green-700', priority: 'High', dueDate: '2025-08-01', assignees: ['https://placehold.co/40x40/fed7aa/9a3412?text=EK'] },
-        { id: 7, title: 'Create social media assets', project: 'Q3 Marketing', projectColor: 'bg-orange-100 text-orange-700', priority: 'Low', dueDate: '2025-08-01', assignees: ['https://placehold.co/40x40/fecaca/991b1b?text=BD'] },
+        { id: 5, title: 'API key for payment gateway is not working', project: 'API Integration', projectColor: 'bg-green-100 text-green-700', priority: 'High', dueDate: '2025-08-01', assignees: ['https://placehold.co/40x40/fed7aa/9a3412?text=ER'] },
+        { id: 7, title: 'Create social media assets', project: 'Q3 Marketing', projectColor: 'bg-orange-100 text-orange-700', priority: 'Low', dueDate: '2025-08-01', assignees: ['https://placehold.co/40x40/fecaca/991b1b?text=EA'] },
     ]
 };
 

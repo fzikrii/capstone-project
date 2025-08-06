@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Bountyboard from './pages/Bountyboard';
 import MyProjects from './pages/Myprojects';
 import NotFound from './pages/Notfound';
+import Profile from './pages/Profile';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -39,6 +40,7 @@ function App() {
         <Route path="/howtouse" element={<Howtouse />} />
         <Route path="/" element={<Landing />} />
         <Route path="/myprojects" element={<MyProjects />} />
+        <Route path="/profile" element={<Profile/>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

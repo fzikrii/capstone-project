@@ -2,12 +2,10 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
 import userRouter from "./routes/user.js";
 import projectRouter from "./routes/project.js";
-import dashboardRouter from "./routes/dashboard.js";
 
 dotenv.config();
 
@@ -48,7 +46,6 @@ mongoose
 // Routes
 app.use("/auth", userRouter); // <-- your login/signup
 app.use("/project", projectRouter); // <-- your project management
-app.use("/dashboard", dashboardRouter);
 
 // Root endpoint
 app.get("/", (req, res) => {

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
 import Icon from '../components/Icon';
 
-// --- FAQ Data (Translated to English) ---
+// --- FAQ Data ---
 const faqData = [
     {
         question: "How do I navigate the app?",

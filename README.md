@@ -31,7 +31,7 @@ The primary goals for this platform are:
 
 ### Core Pages
 1.  **Landing Page:** Features a clean header, project overview, "About Us," and contact information in the footer.
-2.  **Login Page:** Allows users to log in with their credentials or via Google/Facebook Auth.
+2.  **Login Page:** Allows users to log in with their credentials or via Google Auth.
 3.  **Sign-Up Page:** New user registration, with data stored in MongoDB.
 4.  **Main Dashboard:** The central workspace for all users after logging in.
 

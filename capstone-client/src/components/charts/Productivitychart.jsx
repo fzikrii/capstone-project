@@ -1,19 +1,37 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 
-const ProductivityChart = () => {
+// This component now accepts a 'data' prop
+const ProductivityChart = ({ data }) => {
     const chartRef = useRef(null);
+    const chartInstanceRef = useRef(null);
 
     useEffect(() => {
-        if (!chartRef.current) return;
+        // If there's no data or the canvas isn't ready, do nothing
+        if (!chartRef.current || !data || data.length === 0) {
+            return;
+        }
+
+        // --- Data Transformation ---
+        // The data is already in the correct format from our backend processing
+        const labels = data.map(item => item.date); // e.g., ['2025-08-01', '2025-08-02', ...]
+        const counts = data.map(item => item.count); // e.g., [0, 5, ...]
+
         const ctx = chartRef.current.getContext('2d');
-        const chart = new Chart(ctx, {
+
+        // Destroy the previous chart instance if it exists
+        if (chartInstanceRef.current) {
+            chartInstanceRef.current.destroy();
+        }
+
+        // Create the new chart with dynamic data
+        chartInstanceRef.current = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu'],
+                labels: labels, // Use dynamic date labels
                 datasets: [{
-                    label: 'Tugas Selesai',
-                    data: [12, 19, 25, 22, 30, 28, 35, 40],
+                    label: 'Tasks Completed', // Updated label
+                    data: counts, // Use dynamic task counts
                     borderColor: '#0ea5e9',
                     backgroundColor: 'rgba(14, 165, 233, 0.1)',
                     borderWidth: 2,
@@ -29,14 +47,19 @@ const ProductivityChart = () => {
                     x: { grid: { display: false } }
                 },
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: true, position: 'top' } // It's good to show the legend
                 }
             }
         });
-        return () => chart.destroy(); // Cleanup chart on component unmount
-    }, []);
+
+    }, [data]); // The effect depends on the 'data' prop
+
+    // Display a message if no data is available
+    if (!data || data.length === 0) {
+        return <div className="flex items-center justify-center h-full text-slate-500">No productivity data to display.</div>;
+    }
 
     return <canvas ref={chartRef}></canvas>;
 };
-
+ 
 export default ProductivityChart;

@@ -12,20 +12,53 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        const userId = localStorage.getItem("userId");
-        if (!userId) return;
+        const fetchData = async () => {
+            try {
+                const userId = localStorage.getItem("userId");
+                const token = localStorage.getItem("token");
+                
+                if (!userId || !token) {
+                    console.log('No user ID or token found');
+                    return;
+                }
 
-        // Fetch user info
-        fetch(`http://localhost:5000/auth/user/${userId}`)
-            .then(res => res.json())
-            .then(data => setUserData(data))
-            .catch(err => console.error("Failed to fetch user data:", err));
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
 
-        // Fetch recent projects
-        fetch(`http://localhost:5000/project/user/${userId}`)
-            .then(res => res.json())
-            .then(data => setRecentProjects(data.slice(0, 3))) // Show 3 recent projects
-            .catch(err => console.error("Failed to fetch projects:", err));
+                // Fetch user info
+                const userResponse = await fetch(`http://localhost:5000/auth/me`, {
+                    headers,
+                    credentials: 'include'
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+
+                const userData = await userResponse.json();
+                setUserData(userData);
+
+                // Fetch recent projects
+                const projectResponse = await fetch(`http://localhost:5000/project/user/${userId}`, {
+                    headers,
+                    credentials: 'include'
+                });
+
+                if (!projectResponse.ok) {
+                    throw new Error('Failed to fetch projects');
+                }
+
+                const projectData = await projectResponse.json();
+                const recentProjects = Array.isArray(projectData) ? projectData.slice(0, 3) : [];
+                setRecentProjects(recentProjects);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        };
+
+        fetchData();
     }, []);
 
     return (

@@ -6,6 +6,10 @@ import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
 import authRouter from "./routes/auth.js";
 import projectRouter from "./routes/project.js";
+import dashboardRouter from "./routes/dashboard.js"; // 1. Import the dashboard router
+import bountyRouter from './routes/bounty.js';
+import User from "./models/users.model.js";
+import scheduleRouter from './routes/schedule.js';
 
 dotenv.config();
 
@@ -14,10 +18,11 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"], // Explicitly list allowed origins
-    credentials: true, // Allow cookies to be sent
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allow common HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 app.use(cookieParser());
@@ -26,15 +31,62 @@ app.use(express.static("public"));
 
 // JWT Passport Middleware
 app.use((req, res, next) => {
-  // Skip authentication for login and signup routes
-  if (req.path.startsWith('/auth/login') || req.path.startsWith('/auth/signup')) {
+  console.log('Auth Middleware - Path:', req.path);
+
+  // Skip authentication for public routes
+  if (req.path.startsWith('/auth/login') || req.path.startsWith('/auth/signup') || req.path.startsWith('/auth/google')) { // 👈 UPDATED LINE
     return next();
   }
-  
-  if (!req.cookies["token"]) {
-    return next();
+
+  // Get token from Authorization header first, then cookie
+  let token = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  } else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
   }
-  passport.authenticate("jwt", { session: false })(req, res, next);
+
+  console.log('Token found:', !!token, {
+    path: req.path,
+    hasAuthHeader: !!authHeader,
+    hasCookie: !!req.cookies.token
+  });
+
+  if (!token) {
+    console.log('No token found');
+    return res.status(401).json({ message: 'No authentication token found' });
+  }
+
+  // Always set authorization header with token for passport
+  req.headers.authorization = `Bearer ${token}`;
+
+  passport.authenticate('jwt', { session: false }, async (err, user, info) => {
+    if (err) {
+      console.error('Passport auth error:', err);
+      return res.status(401).json({ message: 'Authentication error', details: err.message });
+    }
+    if (!user) {
+      console.log('Authentication failed:', info);
+      return res.status(401).json({ message: info?.message || 'Invalid or expired token' });
+    }
+
+    try {
+      // Get fresh user data from database
+      const freshUser = await User.findById(user._id).select('-password');
+      if (!freshUser) {
+        console.log('User not found in database:', user._id);
+        return res.status(401).json({ message: 'User not found' });
+      }
+
+      console.log('User authenticated:', freshUser.email);
+      req.user = freshUser;
+      next();
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  })(req, res, next);
 });
 
 // Connect to MongoDB
@@ -51,6 +103,9 @@ mongoose
 // Routes
 app.use("/auth", authRouter); // <-- your login/signup
 app.use("/project", projectRouter); // <-- your project management
+app.use("/dashboard", dashboardRouter); // 2. Add the dashboard route
+app.use("/bounty", bountyRouter); // CHANGE: Add this line to register the new routes
+app.use("/schedule", scheduleRouter); // ADD THIS LINE
 
 // Root endpoint
 app.get("/", (req, res) => {
@@ -63,5 +118,5 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT ;
+const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

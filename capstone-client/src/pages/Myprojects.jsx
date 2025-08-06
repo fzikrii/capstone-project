@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-// import Icon from '../components/Icon';
+import axios from 'axios'; // Import axios for API calls
+
+const API_BASE_URL = 'http://localhost:5000/project'; // Your backend URL
 
 // --- Helper: Ikon SVG (Nama diubah untuk menghindari konflik) ---
 const SvgIcon = ({ name, className }) => {
@@ -43,53 +45,62 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 };
 
 // --- Data Awal Proyek ---
-const initialProjects = [
-    {
-        id: 1,
-        title: 'Website Redesign',
-        description: 'Complete overhaul of the main company website.',
-        startDate: '2025-08-01',
-        endDate: '2025-09-30',
-        team: ['https://placehold.co/40x40/a7f3d0/14532d?text=EA', 'https://placehold.co/40x40/fecaca/991b1b?text=FZ', 'https://placehold.co/40x40/bae6fd/0c4a6e?text=ER'],
-        tasks: {
-            ToDo: [{ id: 't1-1', title: 'Plan new sitemap', endDate: '2025-08-20' }],
-            Ongoing: [{ id: 't1-2', title: 'Develop homepage prototype', endDate: '2025-09-01' }],
-            Done: [{ id: 't1-3', title: 'Gather user feedback', endDate: '2025-08-15' }],
-            Stuck: [],
-        }
-    },
-    {
-        id: 2,
-        title: 'Mobile App Launch',
-        description: 'Develop and launch the new iOS and Android app.',
-        startDate: '2025-07-15',
-        endDate: '2025-08-30',
-        team: ['https://placehold.co/40x40/a7f3d0/14532d?text=FZ', 'https://placehold.co/40x40/c7d2fe/3730a3?text=ER'],
-        tasks: {
-            ToDo: [],
-            Ongoing: [{ id: 't2-1', title: 'Finalize App Store assets', endDate: '2025-08-10' }],
-            Done: [{ id: 't2-2', title: 'Beta testing phase 1', endDate: '2025-07-30' }, { id: 't2-3', title: 'Setup server environment', endDate: '2025-07-20' }],
-            Stuck: [],
-        }
-    },
-];
+// const initialProjects = [
+//     {
+//         id: 1,
+//         title: 'Website Redesign',
+//         description: 'Complete overhaul of the main company website.',
+//         startDate: '2025-08-01',
+//         endDate: '2025-09-30',
+//         team: ['https://placehold.co/40x40/a7f3d0/14532d?text=EA', 'https://placehold.co/40x40/fecaca/991b1b?text=FZ', 'https://placehold.co/40x40/bae6fd/0c4a6e?text=ER'],
+//         tasks: {
+//             ToDo: [{ id: 't1-1', title: 'Plan new sitemap', endDate: '2025-08-20' }],
+//             Ongoing: [{ id: 't1-2', title: 'Develop homepage prototype', endDate: '2025-09-01' }],
+//             Done: [{ id: 't1-3', title: 'Gather user feedback', endDate: '2025-08-15' }],
+//             Stuck: [],
+//         }
+//     },
+//     {
+//         id: 2,
+//         title: 'Mobile App Launch',
+//         description: 'Develop and launch the new iOS and Android app.',
+//         startDate: '2025-07-15',
+//         endDate: '2025-08-30',
+//         team: ['https://placehold.co/40x40/a7f3d0/14532d?text=FZ', 'https://placehold.co/40x40/c7d2fe/3730a3?text=ER'],
+//         tasks: {
+//             ToDo: [],
+//             Ongoing: [{ id: 't2-1', title: 'Finalize App Store assets', endDate: '2025-08-10' }],
+//             Done: [{ id: 't2-2', title: 'Beta testing phase 1', endDate: '2025-07-30' }, { id: 't2-3', title: 'Setup server environment', endDate: '2025-07-20' }],
+//             Stuck: [],
+//         }
+//     },
+// ];
+
+// --- A new helper to generate avatar URLs from usernames ---
+const getAvatarUrl = (username) => {
+    const initial = username ? username.charAt(0).toUpperCase() : '?';
+    // Using a service like placehold.co for simple, colored initial avatars
+    const colors = ['a7f3d0/14532d', 'fecaca/991b1b', 'bae6fd/0c4a6e', 'c7d2fe/3730a3', 'fef08a/854d0e'];
+    const color = colors[initial.charCodeAt(0) % colors.length];
+    return `https://placehold.co/40x40/${color}?text=${initial}`;
+};
 
 // --- Komponen untuk Kartu Kanban ---
 const TaskKanbanCard = ({ task, onDragStart }) => (
     <div
         draggable
-        onDragStart={(e) => onDragStart(e, task.id)}
+        onDragStart={(e) => onDragStart(e, task._id)} // Use task._id from MongoDB
         className="bg-white p-3.5 rounded-lg shadow-sm border border-slate-200 mb-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-sky-300 transition-all animate-fade-in"
     >
         <h4 className="font-semibold text-slate-800 mb-2">{task.title}</h4>
         <div className="flex justify-between items-center text-sm text-slate-500">
-            <span>Due: {task.endDate}</span>
+            <span>Due: {new Date(task.deadline).toLocaleDateString()}</span> {/* Use task.deadline */}
         </div>
     </div>
 );
 
 // --- Komponen untuk Kolom Kanban ---
-const BoardColumn = ({ title, tasks, color, status, onDrop, onDragOver }) => (
+const BoardColumn = ({ title, tasks = [], color, status, onDrop, onDragOver }) => (
     <div
         onDrop={(e) => onDrop(e, status)}
         onDragOver={onDragOver}
@@ -102,7 +113,7 @@ const BoardColumn = ({ title, tasks, color, status, onDrop, onDragOver }) => (
         </h3>
         <div className="h-full overflow-y-auto pr-1">
             {tasks.length > 0 ? (
-                tasks.map(task => <TaskKanbanCard key={task.id} task={task} onDragStart={(e, taskId) => e.dataTransfer.setData("taskId", taskId)} />)
+                tasks.map(task => <TaskKanbanCard key={task._id} task={task} onDragStart={(e, taskId) => e.dataTransfer.setData("taskId", taskId)} />)
             ) : (
                 <div className="flex items-center justify-center h-20 text-sm text-slate-400">No tasks yet.</div>
             )}
@@ -111,53 +122,67 @@ const BoardColumn = ({ title, tasks, color, status, onDrop, onDragOver }) => (
 );
 
 // --- Komponen untuk Papan Tugas (Tampilan Kanban) ---
-const ProjectTaskboard = ({ project, onBack, onUpdateTasks }) => {
-    const [tasks, setTasks] = useState(project.tasks);
+const ProjectTaskboard = ({ project, onBack, onTasksUpdated }) => {
+    const [tasks, setTasks] = useState(project.tasks || []);
     const [isTaskModalOpen, setTaskModalOpen] = useState(false);
-    
+
     useEffect(() => {
-        setTasks(project.tasks);
+        setTasks(project.tasks || []);
     }, [project]);
 
-    const handleDrop = (e, targetStatus) => {
-        const taskId = e.dataTransfer.getData("taskId");
-        let sourceStatus;
-        let draggedTask;
-
-        for (const status in tasks) {
-            const task = tasks[status].find(t => t.id === taskId);
-            if (task) {
-                sourceStatus = status;
-                draggedTask = task;
-                break;
+    // **BRIDGE**: Transform the flat 'tasks' array from the backend into the grouped object the UI needs.
+    const groupedTasks = useMemo(() => {
+        const initialGroups = { ToDo: [], Ongoing: [], Done: [], Stuck: [] };
+        return tasks.reduce((groups, task) => {
+            const status = task.status || 'ToDo'; // Default to 'ToDo' if status is missing
+            if (groups[status]) {
+                groups[status].push(task);
             }
-        }
+            return groups;
+        }, initialGroups);
+    }, [tasks]);
 
-        if (draggedTask && sourceStatus !== targetStatus) {
-            const newTasks = { ...tasks };
-            newTasks[sourceStatus] = newTasks[sourceStatus].filter(t => t.id !== taskId);
-            newTasks[targetStatus] = [...newTasks[targetStatus], draggedTask];
-            
-            setTasks(newTasks);
-            onUpdateTasks(project.id, newTasks);
+
+    const handleDrop = async (e, targetStatus) => {
+        const taskId = e.dataTransfer.getData("taskId");
+        const taskToMove = tasks.find(t => t._id === taskId);
+
+        // Only proceed if the task exists and is moving to a new column
+        if (taskToMove && taskToMove.status !== targetStatus) {
+            try {
+                // 1. Tell the backend to update the task
+                await axios.put(`${API_BASE_URL}/tasks/${taskId}`,
+                    { status: targetStatus },
+                    { withCredentials: true }
+                );
+
+                // 2. AFTER the backend confirms, refetch the projects to update the UI
+                onTasksUpdated();
+
+            } catch (error) {
+                console.error("Failed to update task status:", error);
+                alert("Error: Could not update the task on the server.");
+                // No need to rollback UI, as it was never changed optimistically
+            }
         }
     };
 
     const handleDragOver = (e) => e.preventDefault();
 
-    const handleAddTask = (taskTitle, endDate) => {
-        const newTask = {
-            id: `t${project.id}-${Date.now()}`,
-            title: taskTitle,
-            endDate: endDate
-        };
-        const newTasks = {
-            ...tasks,
-            ToDo: [newTask, ...tasks.ToDo]
-        };
-        setTasks(newTasks);
-        onUpdateTasks(project.id, newTasks);
-        setTaskModalOpen(false);
+    const handleAddTask = async (title, deadline) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/${project._id}/tasks`,
+                { title, deadline },
+                { withCredentials: true }
+            );
+            const newTask = response.data;
+            setTasks(currentTasks => [newTask, ...currentTasks]);
+            setTaskModalOpen(false);
+            onTasksUpdated();
+        } catch (error) {
+            console.error("Failed to add task:", error);
+            alert("Error: Could not add new task.");
+        }
     };
 
     return (
@@ -179,13 +204,13 @@ const ProjectTaskboard = ({ project, onBack, onUpdateTasks }) => {
                         <span>New Task</span>
                     </button>
                 </header>
-                
+
                 <main className="flex-1 flex overflow-x-auto overflow-y-hidden p-4 sm:p-6 lg:p-8">
                     <div className="flex flex-col sm:flex-row gap-6 h-full w-full">
-                        <BoardColumn title="To Do" tasks={tasks.ToDo} color="sky" status="ToDo" onDrop={handleDrop} onDragOver={handleDragOver} />
-                        <BoardColumn title="Ongoing" tasks={tasks.Ongoing} color="amber" status="Ongoing" onDrop={handleDrop} onDragOver={handleDragOver} />
-                        <BoardColumn title="Done" tasks={tasks.Done} color="emerald" status="Done" onDrop={handleDrop} onDragOver={handleDragOver} />
-                        <BoardColumn title="Stuck" tasks={tasks.Stuck} color="rose" status="Stuck" onDrop={handleDrop} onDragOver={handleDragOver} />
+                        <BoardColumn title="To Do" tasks={groupedTasks.ToDo} color="sky" status="ToDo" onDrop={handleDrop} onDragOver={handleDragOver} />
+                        <BoardColumn title="Ongoing" tasks={groupedTasks.Ongoing} color="amber" status="Ongoing" onDrop={handleDrop} onDragOver={handleDragOver} />
+                        <BoardColumn title="Done" tasks={groupedTasks.Done} color="emerald" status="Done" onDrop={handleDrop} onDragOver={handleDragOver} />
+                        <BoardColumn title="Stuck" tasks={groupedTasks.Stuck} color="rose" status="Stuck" onDrop={handleDrop} onDragOver={handleDragOver} />
                     </div>
                 </main>
             </div>
@@ -195,19 +220,21 @@ const ProjectTaskboard = ({ project, onBack, onUpdateTasks }) => {
 
 // --- Komponen untuk Kartu Daftar Proyek ---
 const ProjectListCard = ({ project, onProjectClick }) => {
-    const allTasks = useMemo(() => Object.values(project.tasks).flat(), [project.tasks]);
-    const doneTasksCount = useMemo(() => project.tasks.Done?.length || 0, [project.tasks.Done]);
-    const totalTasksCount = useMemo(() => allTasks.length, [allTasks]);
+    // **BRIDGE**: The logic now works on the flat 'tasks' array from the backend.
+    const allTasks = project.tasks || [];
+    const doneTasksCount = allTasks.filter(task => task.status === 'Done').length;
+    const totalTasksCount = allTasks.length;
     const progress = totalTasksCount > 0 ? Math.round((doneTasksCount / totalTasksCount) * 100) : 0;
     const progressColorClass = getProgressColor(progress);
 
     return (
         <div onClick={() => onProjectClick(project)} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-sky-400 transition-all cursor-pointer animate-fade-in-up">
             <div className="flex justify-between items-start">
-                <h3 className="font-bold text-lg text-slate-800 mb-1">{project.title}</h3>
+                <h3 className="font-bold text-lg text-slate-800 mb-1">{project.name}</h3> {/* Use project.name */}
                 <div className="flex -space-x-2">
-                    {project.team.map((avatar, index) => (
-                        <img key={index} className="w-8 h-8 rounded-full border-2 border-white object-cover" src={avatar} alt={`Team member ${index + 1}`} />
+                    {/* Use real member data and generate avatars */}
+                    {project.members.map((member) => (
+                        <img key={member._id} className="w-8 h-8 rounded-full border-2 border-white object-cover" src={getAvatarUrl(member.username)} alt={member.username} title={member.username} />
                     ))}
                 </div>
             </div>
@@ -233,8 +260,11 @@ const ProjectList = ({ projects, onProjectClick, onAddProject }) => {
                 }} />
             </Modal>
             <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 p-4 border-b border-slate-200 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-slate-800">My Projects</h1>
+                <header
+                    className="sticky top-0 z-20 min-h-[65px] flex items-center justify-between px-4 border-b border-slate-200"
+                    style={{ backgroundColor: "#0B1C47" }}
+                >
+                    <h1 className="text-2xl font-bold text-white">My Projects</h1>
                     <button onClick={() => setProjectModalOpen(true)} className="flex items-center gap-2 bg-sky-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-sky-600 transition-transform hover:scale-105 text-sm">
                         <SvgIcon name="plus" className="w-5 h-5" />
                         <span>New Project</span>
@@ -243,7 +273,13 @@ const ProjectList = ({ projects, onProjectClick, onAddProject }) => {
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                     {projects.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {projects.map(project => <ProjectListCard key={project.id} project={project} onProjectClick={onProjectClick} />)}
+                            {projects.map(project => (
+                                <ProjectListCard
+                                    key={project._id} // Add this unique key prop
+                                    project={project}
+                                    onProjectClick={onProjectClick}
+                                />
+                            ))}
                         </div>
                     ) : (
                         <div className="text-center py-20">
@@ -315,7 +351,7 @@ const NewTaskForm = ({ onAddTask }) => {
                 <label htmlFor="task-title" className="block text-sm font-medium text-slate-700 mb-1">Task Title</label>
                 <input type="text" id="task-title" value={title} onChange={e => setTitle(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="e.g., Draft initial design mockups" required />
             </div>
-             <div className="mb-6">
+            <div className="mb-6">
                 <label htmlFor="task-end-date" className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
                 <input type="date" id="task-end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
@@ -327,47 +363,92 @@ const NewTaskForm = ({ onAddTask }) => {
 
 // --- Komponen Aplikasi Utama ---
 const App = () => {
-    const [projects, setProjects] = useState(initialProjects);
+    const [projects, setProjects] = useState([]);
     const [selectedProject, setSelectedProject] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    // Function to fetch all projects
+    const fetchProjects = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(API_BASE_URL, { withCredentials: true });
+            setProjects(response.data);
+            setError(null);
+        } catch (err) {
+            console.error("Failed to fetch projects:", err);
+            setError("Could not load projects. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Fetch projects when the component mounts
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    useEffect(() => {
+        // If a project is currently selected...
+        if (selectedProject) {
+            // ...find its latest version in the newly fetched projects array.
+            const updatedSelectedProject = projects.find(p => p._id === selectedProject._id);
+            
+            if (updatedSelectedProject) {
+                // ...and update the selectedProject state with this fresh data.
+                setSelectedProject(updatedSelectedProject);
+            } else {
+                // If the project is no longer in the list (e.g., deleted), clear the selection.
+                setSelectedProject(null);
+            }
+        }
+    }, [projects]); 
+    
     const handleProjectClick = (project) => setSelectedProject(project);
     const handleBackToList = () => setSelectedProject(null);
 
-    const handleAddProject = (title, description, startDate, endDate) => {
-        const newProject = {
-            id: Date.now(),
-            title,
-            description,
-            startDate,
-            endDate,
-            team: ['https://placehold.co/40x40/d1d5db/4b5563?text=ME'], // Default user
-            tasks: { ToDo: [], Ongoing: [], Done: [], Stuck: [] }
-        };
-        setProjects(prevProjects => [newProject, ...prevProjects]);
+    const handleAddProject = async (name, description) => {
+        try {
+            const response = await axios.post(API_BASE_URL,
+                { name, description },
+                { withCredentials: true }
+            );
+            // Add the new project returned from the API to the top of the list
+            setProjects(prevProjects => [response.data, ...prevProjects]);
+        } catch (error) {
+            console.error("Failed to create project:", error);
+            alert("Error: Could not create the project.");
+        }
     };
-    
-    const handleUpdateTasks = (projectId, updatedTasks) => {
-        setProjects(currentProjects => 
-            currentProjects.map(p => 
-                p.id === projectId ? { ...p, tasks: updatedTasks } : p
-            )
-        );
+
+    // This function will be called from the taskboard to refetch data
+    const handleTasksUpdated = () => {
+        fetchProjects(); // Refetch all data to ensure progress bars are accurate
+        // A more optimized approach would be to just refetch the selected project
     };
+
+    // --- Loading and Error State UI ---
+    if (isLoading) {
+        return <div className="flex h-screen w-full justify-center items-center">Loading Projects...</div>;
+    }
+    if (error) {
+        return <div className="flex h-screen w-full justify-center items-center text-rose-500">{error}</div>;
+    }
 
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
             <Sidebar />
             <div className="flex-1 flex flex-col">
                 {selectedProject ? (
-                    <ProjectTaskboard 
-                        project={selectedProject} 
+                    <ProjectTaskboard
+                        project={selectedProject}
                         onBack={handleBackToList}
-                        onUpdateTasks={handleUpdateTasks}
+                        onTasksUpdated={handleTasksUpdated}
                     />
                 ) : (
-                    <ProjectList 
-                        projects={projects} 
-                        onProjectClick={handleProjectClick} 
+                    <ProjectList
+                        projects={projects}
+                        onProjectClick={handleProjectClick}
                         onAddProject={handleAddProject}
                     />
                 )}

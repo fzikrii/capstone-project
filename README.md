@@ -61,32 +61,16 @@ This project is being built using the following technologies:
 * **Database:** MongoDB
 * **Authentication:** Passport.js with Google OAuth 2.0
 * **Tools:** Git, GitHub, VS Code
-## 👥 Contributors
-
+  
+👥 Contributors
 <p align="left">
-  <a href="https://github.com/EmmAI03">
-    <img src="https://github.com/EmmAI03.png" width="80" height="80" style="border-radius: 50%;" />
-    <br />
-    <sub><b>@EmmAI03</b></sub>
-  </a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/fzikrii">
-    <img src="https://github.com/fzikrii.png" width="80" height="80" style="border-radius: 50%;" />
-    <br />
-    <sub><b>@fzikrii</b></sub>
-  </a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/MannLTC19">
-    <img src="https://github.com/MannLTC19.png" width="80" height="80" style="border-radius: 50%;" />
-    <br />
-    <sub><b>@MannLTC19</b></sub>
-  </a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/elmiraa89">
-    <img src="https://github.com/elmiraa89.png" width="80" height="80" style="border-radius: 50%;" />
-    <br />
-    <sub><b>@elmiraa89</b></sub>
-  </a>
+<a href="https://github.com/EmmAI03"><img src="https://github.com/EmmAI03.png" width="80" height="80" style="border-radius: 50%;" alt="EmmAI03"/></a>
+&nbsp;&nbsp;
+<a href="https://github.com/fzikrii"><img src="https://github.com/fzikrii.png" width="80" height="80" style="border-radius: 50%;" alt="fzikrii"/></a>
+&nbsp;&nbsp;
+<a href="https://github.com/MannLTC19"><img src="https://github.com/MannLTC19.png" width="80" height="80" style="border-radius: 50%;" alt="MannLTC19"/></a>
+&nbsp;&nbsp;
+<a href="https://github.com/elmiraa89"><img src="https://github.com/elmiraa89.png" width="80" height="80" style="border-radius: 50%;" alt="elmiraa89"/></a>
 </p>
 
 Feel free to reach out if you have any questions. Thank you for visiting!

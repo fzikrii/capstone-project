@@ -7,10 +7,11 @@ import passport from "./config/passport.js";
 import authRouter from "./routes/auth.js";
 import projectRouter from "./routes/project.js";
 import dashboardRouter from "./routes/dashboard.js"; // 1. Import the dashboard router
-import bountyRouter from './routes/bounty.js';
+import bountyRouter from "./routes/bounty.js";
 import User from "./models/users.model.js";
-import scheduleRouter from './routes/schedule.js';
-import chatRouter from './routes/gemini.js';
+import scheduleRouter from "./routes/schedule.js";
+import chatRouter from "./routes/gemini.js";
+import profileRoutes from "./routes/profile.js";
 
 dotenv.config();
 
@@ -32,60 +33,69 @@ app.use(express.static("public"));
 
 // JWT Passport Middleware
 app.use((req, res, next) => {
-  console.log('Auth Middleware - Path:', req.path);
+  console.log("Auth Middleware - Path:", req.path);
 
   // Skip authentication for public routes
-  if (req.path.startsWith('/auth/login') || req.path.startsWith('/auth/signup') || req.path.startsWith('/auth/google')) { // 👈 UPDATED LINE
+  if (
+    req.path.startsWith("/auth/login") ||
+    req.path.startsWith("/auth/signup") ||
+    req.path.startsWith("/auth/google")
+  ) {
+    // 👈 UPDATED LINE
     return next();
   }
 
   // Get token from Authorization header first, then cookie
   let token = null;
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.substring(7);
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
 
-  console.log('Token found:', !!token, {
+  console.log("Token found:", !!token, {
     path: req.path,
     hasAuthHeader: !!authHeader,
-    hasCookie: !!req.cookies.token
+    hasCookie: !!req.cookies.token,
   });
 
   if (!token) {
-    console.log('No token found');
-    return res.status(401).json({ message: 'No authentication token found' });
+    console.log("No token found");
+    return res.status(401).json({ message: "No authentication token found" });
   }
 
   // Always set authorization header with token for passport
   req.headers.authorization = `Bearer ${token}`;
 
-  passport.authenticate('jwt', { session: false }, async (err, user, info) => {
+  passport.authenticate("jwt", { session: false }, async (err, user, info) => {
     if (err) {
-      console.error('Passport auth error:', err);
-      return res.status(401).json({ message: 'Authentication error', details: err.message });
+      console.error("Passport auth error:", err);
+      return res
+        .status(401)
+        .json({ message: "Authentication error", details: err.message });
     }
     if (!user) {
-      console.log('Authentication failed:', info);
-      return res.status(401).json({ message: info?.message || 'Invalid or expired token' });
+      console.log("Authentication failed:", info);
+      return res
+        .status(401)
+        .json({ message: info?.message || "Invalid or expired token" });
     }
 
     try {
       // Get fresh user data from database
-      const freshUser = await User.findById(user._id).select('-password');
+      const freshUser = await User.findById(user._id).select("-password");
       if (!freshUser) {
-        console.log('User not found in database:', user._id);
-        return res.status(401).json({ message: 'User not found' });
+        console.log("User not found in database:", user._id);
+        return res.status(401).json({ message: "User not found" });
       }
 
-      console.log('User authenticated:', freshUser.email);
+      console.log("User authenticated:", freshUser.email);
       req.user = freshUser;
       next();
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      return res.status(500).json({ message: 'Server error' });
+      console.error("Error fetching user data:", error);
+      return res.status(500).json({ message: "Server error" });
     }
   })(req, res, next);
 });
@@ -108,6 +118,7 @@ app.use("/dashboard", dashboardRouter); // 2. Add the dashboard route
 app.use("/bounty", bountyRouter); // CHANGE: Add this line to register the new routes
 app.use("/schedule", scheduleRouter); // ADD THIS LINE
 app.use("/api/gemini", chatRouter); // Line to handle Gemini chatbot requests
+app.use("/api/profile", profileRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {

@@ -3,9 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 
 // --- Initialize the AI Client Outside the Component ---
 // IMPORTANT: In production, use environment variables to secure your API key
-const client = new GoogleGenAI({
-  apiKey: "AIzaSyBdLfgGwmrIj8kYy2Fsf-NLeD7aLo1mntk",
-});
+const client = new GoogleGenAI({ apiKey: "AIzaSyBdLfgGwmrIj8kYy2Fsf-NLeD7aLo1mntk" });
 
 // --- Komponen Ikon ---
 const ChatIcon = () => (
@@ -103,20 +101,19 @@ function FloatingChatbot() {
         message: currentInput,
       });
 
-      const aiResponseText =
-        response.text || "Sorry, I couldn't generate a response.";
+      const aiResponseText = response.text || "Sorry, I couldn't generate a response.";
       const aiMessage = { text: aiResponseText, sender: "ai" };
       setMessages((prev) => [...prev, aiMessage]);
-
+      
       // Optional: Sync with chat history from the session
       // const history = await chatSession.getHistory();
       // console.log("Chat history:", history);
+      
     } catch (error) {
       console.error("Error fetching AI response:", error);
-
+      
       // More specific error handling
-      let errorText =
-        "Sorry, I'm having trouble connecting. Please try again later.";
+      let errorText = "Sorry, I'm having trouble connecting. Please try again later.";
       if (error.message?.includes("API key")) {
         errorText = "API configuration error. Please check your settings.";
       } else if (error.message?.includes("quota")) {
@@ -124,7 +121,7 @@ function FloatingChatbot() {
       } else if (error.message?.includes("chat session")) {
         errorText = "Chat session error. Please refresh and try again.";
       }
-
+      
       const errorMessage = {
         text: errorText,
         sender: "ai",
@@ -182,7 +179,7 @@ function FloatingChatbot() {
       >
         {/* Header */}
         <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800">Chat with Emmy</h3>
+          <h3 className="font-semibold text-gray-800">Chat with Falco</h3>
           <div className="flex items-center space-x-2">
             <button
               onClick={resetChat}
@@ -268,7 +265,7 @@ function FloatingChatbot() {
               placeholder="Ask Falco anything..."
               disabled={isLoading}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   handleSend(e);
                 }

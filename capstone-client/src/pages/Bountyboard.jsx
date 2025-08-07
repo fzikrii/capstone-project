@@ -179,7 +179,7 @@ const BountyBoard = () => {
                             placeholder="Search bounties by title, description, or project name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full px-5 py-3 border border-slate-300 rounded-full text-base bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-shadow"
+                            className="w-full px-5 py-3 border border-slate-300 rounded-lg text-base bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-shadow"
                         />
                     </div>
 

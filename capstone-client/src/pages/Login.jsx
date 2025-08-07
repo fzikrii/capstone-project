@@ -5,84 +5,88 @@ import bgwave from "../assets/bgwave.png";
 const Login = () => {
   const navigate = useNavigate(); // Inisialisasi navigate
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
-  const [message, setMessage] = useState('');
-  
+  const [message, setMessage] = useState("");
+
   // Destructure for conveniencef
   const { email, password } = formData;
 
   // Backend URL
-  const BACKEND_URL = 'http://localhost:5000';
+  const BACKEND_URL = "http://localhost:5000";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     console.log(`${name} changed:`, value);
   };
 
   const handleLocalLogin = async (e) => {
     e.preventDefault(); // Mencegah refresh halaman
-    setMessage('');
-    
+    setMessage("");
+
     // Debug log to check values
-    console.log('Form Data:', formData);
-    console.log('Destructured values:', { email, password });
+    console.log("Form Data:", formData);
+    console.log("Destructured values:", { email, password });
 
     if (!formData.email || !formData.password) {
-      setMessage('Please enter both email and password');
+      setMessage("Please enter both email and password");
       return;
     }
 
     try {
-      console.log('Attempting login with:', {
+      console.log("Attempting login with:", {
         email: formData.email,
         passwordLength: formData.password.length,
         passwordFirstChar: formData.password[0],
-        passwordLastChar: formData.password[formData.password.length - 1]
+        passwordLastChar: formData.password[formData.password.length - 1],
       });
 
       const response = await fetch(`${BACKEND_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // This is important for handling cookies
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // This is important for handling cookies
         body: JSON.stringify(formData),
       });
 
-      console.log('Response status:', response.status);
+      console.log("Response status:", response.status);
       const responseData = await response.json().catch(() => null);
-      console.log('Response data:', responseData);
-      
+      console.log("Response data:", responseData);
+
       if (response.ok) {
-        console.log('Login successful:', responseData);
-        setMessage(`Welcome, ${responseData.user.displayName}! Login successful.`);
+        console.log("Login successful:", responseData);
+        setMessage(
+          `Welcome, ${responseData.user.displayName}! Login successful.`
+        );
         localStorage.setItem("userId", responseData.user._id);
         if (responseData.token) {
           localStorage.setItem("token", responseData.token);
         }
         navigate("/dashboard");
       } else {
-        const errorMessage = responseData?.message || 'Login failed. Please check your credentials.';
+        const errorMessage =
+          responseData?.message ||
+          "Login failed. Please check your credentials.";
         setMessage(errorMessage);
-        console.error('Login failed:', {
+        console.error("Login failed:", {
           status: response.status,
           message: errorMessage,
-          response: responseData
+          response: responseData,
         });
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setMessage('An error occurred. Please try again later.');
+      console.error("Login error:", error);
+      setMessage("An error occurred. Please try again later.");
     }
   };
 
   const handleGoogleLogin = () => {
     // Arahkan ke rute backend untuk otentikasi Google
-    window.location.href = `${BACKEND_URL}/auth/google/callback`;
+    window.location.href = `${BACKEND_URL}/auth/google`;
   };
 
   return (
@@ -113,11 +117,14 @@ const Login = () => {
           <h2 className="text-3xl font-bold text-[#0B1C47] text-center mb-6">
             Login to Your Account
           </h2>
-          
+
           {/* === FORM YANG DIPERBAIKI MULAI DARI SINI === */}
           <form className="space-y-4" onSubmit={handleLocalLogin}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#0B1C47]">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-[#0B1C47]"
+              >
                 Email
               </label>
               <input
@@ -132,7 +139,10 @@ const Login = () => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#0B1C47]">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-[#0B1C47]"
+              >
                 Password
               </label>
               <input
@@ -157,7 +167,11 @@ const Login = () => {
           {/* === FORM YANG DIPERBAIKI SELESAI DI SINI === */}
 
           {message && (
-            <div className={`mt-4 text-center text-sm ${message.includes('Welcome') ? 'text-green-600' : 'text-red-600'}`}>
+            <div
+              className={`mt-4 text-center text-sm ${
+                message.includes("Welcome") ? "text-green-600" : "text-red-600"
+              }`}
+            >
               {message}
             </div>
           )}
@@ -170,7 +184,11 @@ const Login = () => {
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            <img className="w-5 h-5 mr-3" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google icon" />
+            <img
+              className="w-5 h-5 mr-3"
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google icon"
+            />
             Sign in with Google
           </button>
 

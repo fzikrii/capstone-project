@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Icon from "../components/Icon";
 
+// Helper function to format date into YYYY-MM-DD key
 const formatDateKey = (date) => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -9,12 +10,14 @@ const formatDateKey = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper function to get token
+// Helper function to get token from localStorage
 const getAuthToken = () => {
   return localStorage.getItem('token');
 };
 
-// API functions
+// --- API Functions ---
+
+// Fetches all schedule events from the server
 const fetchScheduleEvents = async () => {
   try {
     const token = getAuthToken();
@@ -24,12 +27,12 @@ const fetchScheduleEvents = async () => {
     }
 
     const response = await fetch('http://localhost:5000/schedule', {
-      method: 'GET', // It's good practice to be explicit
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      credentials: 'include' // <-- ADD THIS LINE
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -47,6 +50,7 @@ const fetchScheduleEvents = async () => {
   }
 };
 
+// Updates a schedule event's date on the server
 const updateScheduleEvent = async (eventId, newDate) => {
   try {
     const token = getAuthToken();
@@ -77,40 +81,37 @@ const updateScheduleEvent = async (eventId, newDate) => {
   }
 };
 
-// Transform API events to calendar format
+// Transforms raw API events into a format usable by the calendar (grouped by date)
 const transformEventsForCalendar = (apiEvents) => {
   const eventsByDate = {};
-
   apiEvents.forEach(event => {
-    // If an event is missing the populated task for any reason, skip it.
-    if (!event.task) return;
+    if (!event.task) return; // Skip if task data is missing
 
     const dateKey = formatDateKey(new Date(event.date));
     if (!eventsByDate[dateKey]) {
       eventsByDate[dateKey] = [];
     }
 
-    // Create a richer event object for the UI
     eventsByDate[dateKey].push({
-      id: event._id, // The ID of the schedule event itself
-      taskTitle: event.task.title, // Use the title from the task
-      projectName: event.task.project?.name, // Get project name if it exists
-      taskTags: event.task.tags || [], // Get task tags
+      id: event._id,
+      taskTitle: event.task.title,
+      projectName: event.task.project?.name,
+      taskTags: event.task.tags || [],
       color: event.color || 'bg-green-500',
       time: new Date(event.date).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
       }),
-      // Keep the original event for debugging or future use
       originalEvent: event
     });
   });
-
   return eventsByDate;
 };
 
+
 // --- MONTH VIEW SUB-COMPONENTS ---
+
 const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -122,6 +123,7 @@ const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const days = [];
 
+    // Add days from the previous month to fill the first week
     const startDayOfWeek = firstDayOfMonth.getDay();
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startDayOfWeek; i > 0; i--) {
@@ -134,6 +136,7 @@ const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
       });
     }
 
+    // Add days for the current month
     for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
       const fullDate = new Date(year, month, i);
       const dateKey = formatDateKey(fullDate);
@@ -147,6 +150,7 @@ const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
       });
     }
 
+    // Add days from the next month to fill the last week
     const totalSlots = days.length > 35 ? 42 : 35;
     const remainingSlots = totalSlots - days.length;
     for (let i = 1; i <= remainingSlots; i++) {
@@ -189,15 +193,10 @@ const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
 const CalendarDay = ({ day, onClick, onEventDrop }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const dayClass = day.isCurrentMonth ? "text-slate-700" : "text-slate-400";
-  const todayClass = day.isToday
-    ? "bg-sky-500 text-white"
-    : "hover:bg-slate-100";
+  const todayClass = day.isToday ? "bg-sky-500 text-white" : "hover:bg-slate-100";
 
   const handleDragStart = (e, eventId, originalDate) => {
-    e.dataTransfer.setData(
-      "text/plain",
-      JSON.stringify({ eventId, originalDate })
-    );
+    e.dataTransfer.setData("text/plain", JSON.stringify({ eventId, originalDate }));
   };
 
   const handleDragOver = (e) => {
@@ -206,7 +205,6 @@ const CalendarDay = ({ day, onClick, onEventDrop }) => {
   };
 
   const handleDragLeave = (e) => {
-    // Only remove drag over state if we're actually leaving the day container
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setIsDragOver(false);
     }
@@ -226,16 +224,13 @@ const CalendarDay = ({ day, onClick, onEventDrop }) => {
 
   return (
     <div
-      className={`border border-slate-200 h-28 p-2 flex flex-col transition-colors ${day.isCurrentMonth ? "cursor-pointer" : ""
-        } ${isDragOver ? "bg-sky-100 border-sky-300" : ""}`}
+      className={`border border-slate-200 h-28 p-2 flex flex-col transition-colors ${day.isCurrentMonth ? "cursor-pointer" : ""} ${isDragOver ? "bg-sky-100 border-sky-300" : ""}`}
       onClick={() => day.isCurrentMonth && onClick(day)}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <span
-        className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold ${dayClass} ${todayClass}`}
-      >
+      <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold ${dayClass} ${todayClass}`}>
         {day.date}
       </span>
       <div className="mt-1 flex-1 overflow-y-auto pr-1">
@@ -243,9 +238,7 @@ const CalendarDay = ({ day, onClick, onEventDrop }) => {
           <div
             key={event.id}
             draggable
-            onDragStart={(e) =>
-              handleDragStart(e, event.id, formatDateKey(day.fullDate))
-            }
+            onDragStart={(e) => handleDragStart(e, event.id, formatDateKey(day.fullDate))}
           >
             <CalendarEvent event={event} />
           </div>
@@ -258,213 +251,15 @@ const CalendarDay = ({ day, onClick, onEventDrop }) => {
 const CalendarEvent = ({ event }) => (
   <div
     className={`p-1 text-xs font-semibold rounded-md text-white ${event.color} mb-1 truncate cursor-grab hover:opacity-90 transition-opacity`}
-    // Updated title to show task and project name on hover
     title={`Task: ${event.taskTitle}${event.projectName ? `\nProject: ${event.projectName}` : ''}`}
   >
-    {/* We still display just the task title here because space is limited */}
     {event.taskTitle}
   </div>
 );
 
-// --- WEEK VIEW SUB-COMPONENTS ---
-const WeekView = ({ currentDate, events, onEventDrop }) => {
-  const weekDays = useMemo(() => {
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(startOfWeek);
-      day.setDate(day.getDate() + i);
-      const dateKey = formatDateKey(day);
-      days.push({
-        date: day.getDate(),
-        fullDate: day,
-        dayName: day.toLocaleDateString("en-US", { weekday: "short" }),
-        events: events[dateKey] || [],
-      });
-    }
-    return days;
-  }, [currentDate, events]);
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 grid grid-cols-7">
-      {weekDays.map((day, index) => (
-        <WeekDayColumn key={`${day.fullDate.getTime()}-${index}`} day={day} onEventDrop={onEventDrop} />
-      ))}
-    </div>
-  );
-};
-
-const WeekDayColumn = ({ day, onEventDrop }) => {
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  const handleDragStart = (e, eventId, originalDate) =>
-    e.dataTransfer.setData(
-      "text/plain",
-      JSON.stringify({ eventId, originalDate })
-    );
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
-      setIsDragOver(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    try {
-      const eventData = JSON.parse(e.dataTransfer.getData("text/plain"));
-      onEventDrop(eventData, formatDateKey(day.fullDate));
-    } catch (error) {
-      console.error('Error handling drop:', error);
-    }
-  };
-
-  return (
-    <div
-      className={`border-l border-slate-200 p-2 first:border-l-0 ${isDragOver ? "bg-sky-100" : ""
-        }`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <div className="text-center mb-2">
-        <p className="text-sm text-slate-500">{day.dayName}</p>
-        <p className="text-2xl font-bold">{day.date}</p>
-      </div>
-      <div className="space-y-2 h-96 overflow-y-auto">
-        {day.events.map((event) => (
-          <div
-            key={event.id}
-            draggable
-            onDragStart={(e) =>
-              handleDragStart(e, event.id, formatDateKey(day.fullDate))
-            }
-          >
-            <CalendarEvent event={event} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// --- DAY VIEW SUB-COMPONENTS ---
-const DayView = ({ currentDate, events }) => {
-  const timeSlots = Array.from(
-    { length: 12 },
-    (_, i) => `${(i + 8).toString().padStart(2, "0")}:00`
-  );
-  const dayEvents = events[formatDateKey(currentDate)] || [];
-
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-slate-700">
-          {currentDate.toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </h3>
-      </div>
-      {timeSlots.map((time) => (
-        <div key={time} className="flex border-t border-slate-200 py-4 first:border-t-0">
-          <div className="w-20 text-sm text-slate-500 flex-shrink-0">{time}</div>
-          <div className="flex-1 pl-4">
-            {dayEvents
-              .filter((e) => e.time && e.time.startsWith(time.slice(0, 2)))
-              .map((event) => (
-                <div key={event.id} className="mb-2">
-                  <CalendarEvent event={event} />
-                </div>
-              ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// --- YEAR VIEW SUB-COMPONENTS ---
-const YearView = ({ currentDate, events, onMonthClick }) => {
-  const months = Array.from(
-    { length: 12 },
-    (_, i) => new Date(currentDate.getFullYear(), i, 1)
-  );
-
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {months.map((month) => (
-        <MiniCalendar
-          key={month.getMonth()}
-          monthDate={month}
-          events={events}
-          onClick={() => onMonthClick(month)}
-        />
-      ))}
-    </div>
-  );
-};
-
-const MiniCalendar = ({ monthDate, events, onClick }) => {
-  const monthName = monthDate.toLocaleDateString("en-US", { month: "long" });
-  const daysInMonth = new Date(
-    monthDate.getFullYear(),
-    monthDate.getMonth() + 1,
-    0
-  ).getDate();
-  const firstDay = new Date(
-    monthDate.getFullYear(),
-    monthDate.getMonth(),
-    1
-  ).getDay();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const emptySlots = Array.from({ length: firstDay });
-
-  return (
-    <div
-      className="border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-sky-500 hover:shadow-md transition-all"
-      onClick={onClick}
-    >
-      <h4 className="font-bold text-center mb-2">{monthName}</h4>
-      <div className="grid grid-cols-7 text-center text-xs text-slate-500">
-        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-          <div key={i}>{d}</div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 text-center text-sm mt-1">
-        {emptySlots.map((_, i) => (
-          <div key={`empty-${i}`}></div>
-        ))}
-        {days.map((day) => {
-          const dateKey = formatDateKey(
-            new Date(monthDate.getFullYear(), monthDate.getMonth(), day)
-          );
-          const hasEvents = events[dateKey] && events[dateKey].length > 0;
-          return (
-            <div
-              key={day}
-              className={`rounded-full w-6 h-6 flex items-center justify-center text-xs ${hasEvents ? "bg-sky-200 font-semibold" : ""
-                }`}
-            >
-              {day}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
 
 // --- MODAL ---
+
 const ScheduleModal = ({ day, onClose }) => {
   if (!day) return null;
 
@@ -492,22 +287,14 @@ const ScheduleModal = ({ day, onClose }) => {
             <ul className="space-y-3">
               {day.events.map((event) => (
                 <li key={event.id} className="flex items-start gap-3">
-                  {/* Event color dot */}
-                  <span
-                    className={`mt-1.5 w-3 h-3 rounded-full flex-shrink-0 ${event.color}`}
-                  ></span>
+                  <span className={`mt-1.5 w-3 h-3 rounded-full flex-shrink-0 ${event.color}`}></span>
                   <div className="flex-1">
-                    {/* Task Title */}
                     <span className="font-semibold text-slate-800">{event.taskTitle}</span>
-
-                    {/* Project Name Badge */}
                     {event.projectName && (
                       <div className="mt-1 text-xs font-medium text-slate-500">
                         Project: {event.projectName}
                       </div>
                     )}
-
-                    {/* Tags */}
                     {event.taskTags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {event.taskTags.map(tag => (
@@ -518,7 +305,6 @@ const ScheduleModal = ({ day, onClose }) => {
                       </div>
                     )}
                   </div>
-                  {/* Completion Time */}
                   {event.time && (
                     <div className="text-sm text-slate-500 flex-shrink-0">{event.time}</div>
                   )}
@@ -542,14 +328,15 @@ const ScheduleModal = ({ day, onClose }) => {
   );
 };
 
-// --- LOADING COMPONENT ---
+
+// --- LOADING & ERROR COMPONENTS ---
+
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-64">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
   </div>
 );
 
-// --- ERROR COMPONENT ---
 const ErrorMessage = ({ message, onRetry }) => (
   <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
     <p className="text-red-700 mb-4">{message}</p>
@@ -562,27 +349,25 @@ const ErrorMessage = ({ message, onRetry }) => (
   </div>
 );
 
-// --- MAIN COMPONENT ---
+
+// --- MAIN COMPONENT (MODIFIED) ---
+
 const Schedule = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
-  const [view, setView] = useState("month");
   const [events, setEvents] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load events from API
+  // Load events from API on component mount
   useEffect(() => {
     const loadEvents = async () => {
       setLoading(true);
       setError(null);
       try {
-        console.log('Loading schedule events...');
         const apiEvents = await fetchScheduleEvents();
-        console.log('Fetched events:', apiEvents);
         const transformedEvents = transformEventsForCalendar(apiEvents);
-        console.log('Transformed events:', transformedEvents);
         setEvents(transformedEvents);
       } catch (err) {
         setError('Failed to load schedule events. Please try again.');
@@ -591,7 +376,6 @@ const Schedule = () => {
         setLoading(false);
       }
     };
-
     loadEvents();
   }, []);
 
@@ -599,195 +383,94 @@ const Schedule = () => {
   const closeModal = () => setSelectedDay(null);
   const handleDayClick = (day) => setSelectedDay(day);
 
+  // Handles drag-and-drop event updates
   const handleEventDrop = async ({ eventId, originalDate }, newDate) => {
     if (originalDate === newDate) return;
 
-    // Optimistically update the UI
+    // Optimistically update UI
     setEvents((prevEvents) => {
       const newEvents = { ...prevEvents };
       const eventToMove = newEvents[originalDate]?.find((e) => e.id === eventId);
-
       if (!eventToMove) return prevEvents;
-
-      // Remove from original date
-      newEvents[originalDate] = newEvents[originalDate].filter(
-        (e) => e.id !== eventId
-      );
-      if (newEvents[originalDate].length === 0) {
-        delete newEvents[originalDate];
-      }
-
-      // Add to new date
+      newEvents[originalDate] = newEvents[originalDate].filter((e) => e.id !== eventId);
+      if (newEvents[originalDate].length === 0) delete newEvents[originalDate];
       if (!newEvents[newDate]) newEvents[newDate] = [];
       newEvents[newDate].push(eventToMove);
-
       return newEvents;
     });
 
-    // Update the backend
+    // Send update to the backend
     try {
       await updateScheduleEvent(eventId, newDate);
     } catch (error) {
-      // Revert the optimistic update on error
+      // Revert UI on error
       setEvents((prevEvents) => {
         const newEvents = { ...prevEvents };
         const eventToRevert = newEvents[newDate]?.find((e) => e.id === eventId);
-
         if (!eventToRevert) return prevEvents;
-
-        // Remove from new date
         newEvents[newDate] = newEvents[newDate].filter((e) => e.id !== eventId);
-        if (newEvents[newDate].length === 0) {
-          delete newEvents[newDate];
-        }
-
-        // Add back to original date
+        if (newEvents[newDate].length === 0) delete newEvents[newDate];
         if (!newEvents[originalDate]) newEvents[originalDate] = [];
         newEvents[originalDate].push(eventToRevert);
-
         return newEvents;
       });
-
       setError('Failed to update event. Please try again.');
       console.error('Error updating event:', error);
     }
   };
 
-  const handleMonthClickFromYear = (date) => {
-    setCurrentDate(date);
-    setView("month");
-  };
-
+  // Simplified navigation for previous month
   const handlePrev = () => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      switch (view) {
-        case "day":
-          newDate.setDate(newDate.getDate() - 1);
-          break;
-        case "week":
-          newDate.setDate(newDate.getDate() - 7);
-          break;
-        case "year":
-          newDate.setFullYear(newDate.getFullYear() - 1);
-          break;
-        case "month":
-        default:
-          newDate.setMonth(newDate.getMonth() - 1);
-          break;
-      }
+      newDate.setMonth(newDate.getMonth() - 1);
       return newDate;
     });
   };
 
+  // Simplified navigation for next month
   const handleNext = () => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      switch (view) {
-        case "day":
-          newDate.setDate(newDate.getDate() + 1);
-          break;
-        case "week":
-          newDate.setDate(newDate.getDate() + 7);
-          break;
-        case "year":
-          newDate.setFullYear(newDate.getFullYear() + 1);
-          break;
-        case "month":
-        default:
-          newDate.setMonth(newDate.getMonth() + 1);
-          break;
-      }
+      newDate.setMonth(newDate.getMonth() + 1);
       return newDate;
     });
   };
-
-  const handleGoToToday = () => setCurrentDate(new Date());
 
   const retryLoadEvents = async () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Retrying to load schedule events...');
       const apiEvents = await fetchScheduleEvents();
       const transformedEvents = transformEventsForCalendar(apiEvents);
       setEvents(transformedEvents);
     } catch (err) {
       setError('Failed to load schedule events. Please try again.');
-      console.error('Retry failed:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  // Simplified view renderer
   const renderView = () => {
     if (loading) return <LoadingSpinner />;
     if (error) return <ErrorMessage message={error} onRetry={retryLoadEvents} />;
-
-    switch (view) {
-      case "day":
-        return <DayView currentDate={currentDate} events={events} />;
-      case "week":
-        return (
-          <WeekView
-            currentDate={currentDate}
-            events={events}
-            onEventDrop={handleEventDrop}
-          />
-        );
-      case "year":
-        return (
-          <YearView
-            currentDate={currentDate}
-            events={events}
-            onMonthClick={handleMonthClickFromYear}
-          />
-        );
-      case "month":
-      default:
-        return (
-          <MonthView
-            currentDate={currentDate}
-            events={events}
-            onDayClick={handleDayClick}
-            onEventDrop={handleEventDrop}
-          />
-        );
-    }
+    return (
+      <MonthView
+        currentDate={currentDate}
+        events={events}
+        onDayClick={handleDayClick}
+        onEventDrop={handleEventDrop}
+      />
+    );
   };
-
+  
+  // Display only the month name in the header
   const currentDisplayDate = useMemo(() => {
-    switch (view) {
-      case "day":
-        return currentDate.toLocaleDateString("en-US", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
-      case "week":
-        const startOfWeek = new Date(currentDate);
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(endOfWeek.getDate() + 6);
-        return `${startOfWeek.toLocaleDateString("en-US", {
-          day: "numeric",
-          month: "short",
-        })} - ${endOfWeek.toLocaleDateString("en-US", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}`;
-      case "year":
-        return currentDate.getFullYear();
-      case "month":
-      default:
-        return currentDate.toLocaleDateString("en-US", {
-          month: "long",
-          year: "numeric",
-        });
-    }
-  }, [currentDate, view]);
+    return currentDate.toLocaleDateString("en-US", {
+      month: "long",
+    });
+  }, [currentDate]);
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans">
@@ -807,27 +490,8 @@ const Schedule = () => {
             <h1 className="text-2xl font-bold text-white">Schedule</h1>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-              {["day", "week", "month", "year"].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`px-3 py-1 text-sm font-semibold rounded-md capitalize transition-all ${view === v
-                    ? "bg-white text-sky-600 shadow-sm"
-                    : "text-slate-500 hover:bg-white/60"
-                    }`}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
+            {/* View switcher and Today button are removed */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleGoToToday}
-                className="px-4 py-2 text-sm font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                Today
-              </button>
               <button
                 onClick={handlePrev}
                 className="p-2 rounded-full bg-white hover:bg-slate-100 transition-colors"

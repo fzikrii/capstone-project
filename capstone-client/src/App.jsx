@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Projectboard from './pages/Projectboard';
 import Schedule from './pages/Schedule';
-import Howtouse from './pages/Howtouse';
+// import Howtouse from './pages/Howtouse';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Bountyboard from './pages/Bountyboard';
@@ -41,7 +41,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/landing" element={<Landing />} />
         <Route path="/projectboard" element={<Projectboard />} />
-        <Route path="/howtouse" element={<Howtouse />} />
+        {/* <Route path="/howtouse" element={<Howtouse />} /> */}
         <Route path="/" element={<Landing />} />
         <Route path="/myprojects" element={<MyProjects />} />
         <Route path="/profile" element={<Profile/>} />

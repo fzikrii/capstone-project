@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
 import authRouter from "./routes/auth.js";
 import projectRouter from "./routes/project.js";
-import dashboardRouter from "./routes/dashboard.js"; // 1. Import the dashboard router
+import dashboardRouter from "./routes/dashboard.js";
 import bountyRouter from "./routes/bounty.js";
 import User from "./models/users.model.js";
 import scheduleRouter from "./routes/schedule.js";
@@ -29,23 +29,23 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+// New: Tell Express to serve files from the 'public' directory
 app.use(express.static("public"));
 
-// JWT Passport Middleware
+// JWT Passport Middleware (unchanged)
 app.use((req, res, next) => {
   console.log("Auth Middleware - Path:", req.path);
 
-  // Skip authentication for public routes
+  // Skip authentication for public routes and the new image upload route
   if (
     req.path.startsWith("/auth/login") ||
     req.path.startsWith("/auth/signup") ||
     req.path.startsWith("/auth/google")
+    // req.path.startsWith("/api/profile/upload-image") // CORRECTED PATH
   ) {
-    // 👈 UPDATED LINE
     return next();
   }
 
-  // Get token from Authorization header first, then cookie
   let token = null;
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -53,19 +53,12 @@ app.use((req, res, next) => {
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
-
-  console.log("Token found:", !!token, {
-    path: req.path,
-    hasAuthHeader: !!authHeader,
-    hasCookie: !!req.cookies.token,
-  });
-
+  
   if (!token) {
     console.log("No token found");
     return res.status(401).json({ message: "No authentication token found" });
   }
 
-  // Always set authorization header with token for passport
   req.headers.authorization = `Bearer ${token}`;
 
   passport.authenticate("jwt", { session: false }, async (err, user, info) => {
@@ -83,7 +76,6 @@ app.use((req, res, next) => {
     }
 
     try {
-      // Get fresh user data from database
       const freshUser = await User.findById(user._id).select("-password");
       if (!freshUser) {
         console.log("User not found in database:", user._id);
@@ -100,7 +92,7 @@ app.use((req, res, next) => {
   })(req, res, next);
 });
 
-// Connect to MongoDB
+// Connect to MongoDB (unchanged)
 mongoose
   .connect(process.env.MONGODB_URI, {
     dbName: process.env.DATABASE_NAME,
@@ -112,24 +104,24 @@ mongoose
   });
 
 // Routes
-app.use("/auth", authRouter); // <-- your login/signup
-app.use("/project", projectRouter); // <-- your project management
-app.use("/dashboard", dashboardRouter); // 2. Add the dashboard route
-app.use("/bounty", bountyRouter); // CHANGE: Add this line to register the new routes
-app.use("/schedule", scheduleRouter); // ADD THIS LINE
-app.use("/api/gemini", chatRouter); // Line to handle Gemini chatbot requests
+app.use("/auth", authRouter);
+app.use("/project", projectRouter);
+app.use("/dashboard", dashboardRouter);
+app.use("/bounty", bountyRouter);
+app.use("/schedule", scheduleRouter);
+app.use("/api/gemini", chatRouter);
 app.use("/api/profile", profileRoutes);
 
-// Root endpoint
+// Root endpoint (unchanged)
 app.get("/", (req, res) => {
   res.send({ message: "Capstone server started" });
 });
 
-// Error handler
+// Error handler (unchanged)
 app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 });
 
-// Start server
+// Start server (unchanged)
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

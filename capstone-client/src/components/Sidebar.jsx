@@ -71,7 +71,7 @@ const Sidebar = ({ isOpen }) => {
     { name: "My Projects", icon: "briefcase", path: "/Myprojects" },
     { name: "Bounty Board", icon: "award", path: "/bountyboard" },
     { name: "Schedule", icon: "calendar", path: "/schedule" },
-    { name: "FAQ", icon: "help-circle", path: "/howtouse" },
+    // { name: "FAQ", icon: "help-circle", path: "/howtouse" },
   ];
 
   return (

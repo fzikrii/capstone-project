@@ -10,6 +10,7 @@ import dashboardRouter from "./routes/dashboard.js"; // 1. Import the dashboard 
 import bountyRouter from './routes/bounty.js';
 import User from "./models/users.model.js";
 import scheduleRouter from './routes/schedule.js';
+import chatRouter from './routes/gemini.js';
 
 dotenv.config();
 
@@ -106,6 +107,7 @@ app.use("/project", projectRouter); // <-- your project management
 app.use("/dashboard", dashboardRouter); // 2. Add the dashboard route
 app.use("/bounty", bountyRouter); // CHANGE: Add this line to register the new routes
 app.use("/schedule", scheduleRouter); // ADD THIS LINE
+app.use("/api/gemini", chatRouter); // Line to handle Gemini chatbot requests
 
 // Root endpoint
 app.get("/", (req, res) => {

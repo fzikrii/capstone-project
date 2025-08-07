@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import MainContent from '../components/Maincontent';
+import GeminiChatbot from '../components/GeminiChatbot';
 
 const Dashboard = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -64,6 +65,7 @@ const Dashboard = () => {
     return (
         <div className="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
             <Sidebar isOpen={isSidebarOpen} />
+            <GeminiChatbot />
             <MainContent 
                 onToggleSidebar={toggleSidebar} 
                 userData={userData}

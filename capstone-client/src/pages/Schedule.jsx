@@ -10,35 +10,27 @@ const formatDateKey = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper function to get token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
-
-// --- API Functions ---
+// --- API Functions (MODIFIED) ---
 
 // Fetches all schedule events from the server
 const fetchScheduleEvents = async () => {
   try {
-    const token = getAuthToken();
-    if (!token) {
-      console.warn('No authentication token found');
-      return [];
-    }
-
+    // REMOVED: No need to get token from localStorage. The browser will send the cookie.
     const response = await fetch('http://localhost:5000/schedule', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        // REMOVED: The 'Authorization' header is no longer needed.
         'Content-Type': 'application/json'
       },
+      // ADDED: This tells the browser to send cookies with the request.
       credentials: 'include'
     });
 
     if (!response.ok) {
       if (response.status === 401) {
-        console.error('Authentication failed - token may be expired');
-        return [];
+        console.error('Authentication failed - you may need to log in again.');
+        // Potentially redirect to login page here
+        // window.location.href = '/login';
       }
       throw new Error(`Failed to fetch events: ${response.status}`);
     }
@@ -46,6 +38,7 @@ const fetchScheduleEvents = async () => {
     return await response.json();
   } catch (error) {
     console.error('Error fetching schedule events:', error);
+    // Return empty array or throw error to be caught by the component
     return [];
   }
 };
@@ -53,23 +46,21 @@ const fetchScheduleEvents = async () => {
 // Updates a schedule event's date on the server
 const updateScheduleEvent = async (eventId, newDate) => {
   try {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-
+    // REMOVED: No need to get token from localStorage.
     const response = await fetch(`http://localhost:5000/schedule/${eventId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        // REMOVED: The 'Authorization' header is no longer needed.
         'Content-Type': 'application/json'
       },
+      // ADDED: This tells the browser to send cookies with the request.
+      credentials: 'include',
       body: JSON.stringify({ date: newDate })
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Authentication failed - please log in again');
+       if (response.status === 401) {
+        console.error('Authentication failed - you may need to log in again.');
       }
       throw new Error(`Failed to update event: ${response.status}`);
     }
@@ -110,7 +101,7 @@ const transformEventsForCalendar = (apiEvents) => {
 };
 
 
-// --- MONTH VIEW SUB-COMPONENTS ---
+// --- MONTH VIEW SUB-COMPONENTS (Unchanged) ---
 
 const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
   const calendarDays = useMemo(() => {
@@ -123,7 +114,6 @@ const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const days = [];
 
-    // Add days from the previous month to fill the first week
     const startDayOfWeek = firstDayOfMonth.getDay();
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startDayOfWeek; i > 0; i--) {
@@ -136,7 +126,6 @@ const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
       });
     }
 
-    // Add days for the current month
     for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
       const fullDate = new Date(year, month, i);
       const dateKey = formatDateKey(fullDate);
@@ -150,7 +139,6 @@ const MonthView = ({ currentDate, events, onDayClick, onEventDrop }) => {
       });
     }
 
-    // Add days from the next month to fill the last week
     const totalSlots = days.length > 35 ? 42 : 35;
     const remainingSlots = totalSlots - days.length;
     for (let i = 1; i <= remainingSlots; i++) {
@@ -258,7 +246,7 @@ const CalendarEvent = ({ event }) => (
 );
 
 
-// --- MODAL ---
+// --- MODAL (Unchanged) ---
 
 const ScheduleModal = ({ day, onClose }) => {
   if (!day) return null;
@@ -329,7 +317,7 @@ const ScheduleModal = ({ day, onClose }) => {
 };
 
 
-// --- LOADING & ERROR COMPONENTS ---
+// --- LOADING & ERROR COMPONENTS (Unchanged) ---
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-64">
@@ -350,7 +338,7 @@ const ErrorMessage = ({ message, onRetry }) => (
 );
 
 
-// --- MAIN COMPONENT (MODIFIED) ---
+// --- MAIN COMPONENT (Unchanged) ---
 
 const Schedule = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -360,22 +348,23 @@ const Schedule = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const loadEvents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const apiEvents = await fetchScheduleEvents();
+      const transformedEvents = transformEventsForCalendar(apiEvents);
+      setEvents(transformedEvents);
+    } catch (err) {
+      setError('Failed to load schedule events. Please try again.');
+      console.error('Error loading events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Load events from API on component mount
   useEffect(() => {
-    const loadEvents = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const apiEvents = await fetchScheduleEvents();
-        const transformedEvents = transformEventsForCalendar(apiEvents);
-        setEvents(transformedEvents);
-      } catch (err) {
-        setError('Failed to load schedule events. Please try again.');
-        console.error('Error loading events:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadEvents();
   }, []);
 
@@ -388,6 +377,7 @@ const Schedule = () => {
     if (originalDate === newDate) return;
 
     // Optimistically update UI
+    const previousEvents = events;
     setEvents((prevEvents) => {
       const newEvents = { ...prevEvents };
       const eventToMove = newEvents[originalDate]?.find((e) => e.id === eventId);
@@ -404,22 +394,12 @@ const Schedule = () => {
       await updateScheduleEvent(eventId, newDate);
     } catch (error) {
       // Revert UI on error
-      setEvents((prevEvents) => {
-        const newEvents = { ...prevEvents };
-        const eventToRevert = newEvents[newDate]?.find((e) => e.id === eventId);
-        if (!eventToRevert) return prevEvents;
-        newEvents[newDate] = newEvents[newDate].filter((e) => e.id !== eventId);
-        if (newEvents[newDate].length === 0) delete newEvents[newDate];
-        if (!newEvents[originalDate]) newEvents[originalDate] = [];
-        newEvents[originalDate].push(eventToRevert);
-        return newEvents;
-      });
+      setEvents(previousEvents);
       setError('Failed to update event. Please try again.');
       console.error('Error updating event:', error);
     }
   };
 
-  // Simplified navigation for previous month
   const handlePrev = () => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
@@ -428,7 +408,6 @@ const Schedule = () => {
     });
   };
 
-  // Simplified navigation for next month
   const handleNext = () => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
@@ -437,24 +416,9 @@ const Schedule = () => {
     });
   };
 
-  const retryLoadEvents = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const apiEvents = await fetchScheduleEvents();
-      const transformedEvents = transformEventsForCalendar(apiEvents);
-      setEvents(transformedEvents);
-    } catch (err) {
-      setError('Failed to load schedule events. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Simplified view renderer
   const renderView = () => {
     if (loading) return <LoadingSpinner />;
-    if (error) return <ErrorMessage message={error} onRetry={retryLoadEvents} />;
+    if (error) return <ErrorMessage message={error} onRetry={loadEvents} />;
     return (
       <MonthView
         currentDate={currentDate}
@@ -465,7 +429,6 @@ const Schedule = () => {
     );
   };
   
-  // Display only the month name in the header
   const currentDisplayDate = useMemo(() => {
     return currentDate.toLocaleDateString("en-US", {
       month: "long",
@@ -490,7 +453,6 @@ const Schedule = () => {
             <h1 className="text-2xl font-bold text-white">Schedule</h1>
           </div>
           <div className="flex items-center gap-4">
-            {/* View switcher and Today button are removed */}
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePrev}

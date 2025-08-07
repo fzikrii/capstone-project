@@ -11,6 +11,7 @@ import Bountyboard from './pages/Bountyboard';
 import MyProjects from './pages/Myprojects';
 import NotFound from './pages/Notfound';
 import Profile from './pages/Profile';
+import FloatingChatbot from './components/FloatingChatbot';
 
 
 function App() {
@@ -24,12 +25,14 @@ function App() {
     }
   }, [isDarkMode]);
 
+  // eslint-disable-next-line no-unused-vars
   const handleToggleDarkMode = () => {
     setIsDarkMode(prev => !prev);
   };
 
   return (
     <Router>
+      <FloatingChatbot />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -49,4 +52,3 @@ function App() {
 }
 
 export default App;
-

@@ -14,7 +14,6 @@ This project aims to build a **modern, professional task management website** in
 Our platform will not only manage tasks but also include:
 
 - 🏆 **Achievements System**  
-- 📜 **Certificates** that can be showcased on a resume or LinkedIn  
 - 💼 **Job Board** where users can post bounties for tasks  
 
 ---

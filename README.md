@@ -24,13 +24,10 @@ Our platform will not only manage tasks but also include:
 1. **📝 Enhanced User Profiles**  
    Dynamic profiles with contribution levels, progress banners, and colorful tags.
 
-2. **💡 Gamification & Recognition**  
-   Award digital certificates to top contributors of completed projects.
-
-3. **🚀 Intuitive Workflow Management**  
+2. **🚀 Intuitive Workflow Management**  
    Manage projects seamlessly from individual tasks to team schedules.
 
-4. **🎨 Clean & Bright UI**  
+3. **🎨 Clean & Bright UI**  
    Simple, colorful, bright interface with a clean white background.
 
 ---
@@ -39,8 +36,7 @@ Our platform will not only manage tasks but also include:
 
 - **Comprehensive Dashboard** – Daily/monthly recaps with charts and progress visualizations.  
 - **Kanban Boards** – To Do, Ongoing, Done, Stuck with color-coded tasks.  
-- **Google/Facebook Authentication** – Secure OAuth login/signup.  
-- **Customizable Experience** – Dark mode & theme customization.
+- **Google Authentication** – Secure OAuth login/signup.  
 
 ---
 

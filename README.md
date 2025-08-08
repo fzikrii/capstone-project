@@ -326,17 +326,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Charts:** Chart.js
 - **Authentication:** Passport.js
 
-
-## 📊 Project Statistics
-
-![GitHub contributors](https://img.shields.io/github/contributors/your-username/capstone-project)
-![GitHub last commit](https://img.shields.io/github/last-commit/your-username/capstone-project)
-![GitHub issues](https://img.shields.io/github/issues/your-username/capstone-project)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/your-username/capstone-project)
-![GitHub stars](https://img.shields.io/github/stars/your-username/capstone-project)
-
----
-
 ## 👥 Contributors
 
 <p align="left">

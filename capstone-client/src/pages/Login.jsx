@@ -2,6 +2,16 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import bgwave from "../assets/bgwave.png";
 
+const stripControlChars = (value) => value.replace(/[\u0000-\u001F\u007F]/g, "");
+
+const sanitizeEmailInput = (value) =>
+  stripControlChars(String(value || "").normalize("NFKC")).trim().toLowerCase();
+
+const sanitizePasswordInput = (value) =>
+  stripControlChars(String(value || "").normalize("NFKC"));
+
+const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 const Login = () => {
   const navigate = useNavigate(); // Inisialisasi navigate
   const [formData, setFormData] = useState({
@@ -38,9 +48,20 @@ const Login = () => {
       return;
     }
 
+    const normalizedFormData = {
+      ...formData,
+      email: sanitizeEmailInput(formData.email),
+      password: sanitizePasswordInput(formData.password),
+    };
+
+    if (!isValidEmailFormat(normalizedFormData.email)) {
+      setMessage("Please enter a valid email address");
+      return;
+    }
+
     try {
       console.log("Attempting login with:", {
-        email: formData.email,
+        email: normalizedFormData.email,
         passwordLength: formData.password.length,
         passwordFirstChar: formData.password[0],
         passwordLastChar: formData.password[formData.password.length - 1],
@@ -50,7 +71,7 @@ const Login = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // This is important for handling cookies
-        body: JSON.stringify(formData),
+        body: JSON.stringify(normalizedFormData),
       });
 
       console.log("Response status:", response.status);

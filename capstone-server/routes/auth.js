@@ -6,18 +6,76 @@ import User from "../models/users.model.js";
 
 const router = express.Router();
 
+const stripControlChars = (value) =>
+  value.replace(/[\u0000-\u001F\u007F]/g, "");
+
+const sanitizeEmailInput = (value) => {
+  if (typeof value !== "string") return "";
+  return stripControlChars(value.normalize("NFKC")).trim().toLowerCase();
+};
+
+const sanitizeUsernameInput = (value) => {
+  if (typeof value !== "string") return "";
+  return stripControlChars(value.normalize("NFKC"))
+    .replace(/[<>]/g, "")
+    .trim()
+    .replace(/\s+/g, " ");
+};
+
+const sanitizePasswordInput = (value) => {
+  if (typeof value !== "string") return "";
+  return stripControlChars(value.normalize("NFKC"));
+};
+
+const isValidEmailFormat = (email) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const isValidUsername = (username) =>
+  /^[a-zA-Z0-9_. -]{3,30}$/.test(username);
+
 // POST /auth/signup
 router.post("/signup", async (req, res) => {
-  const { username, email, password } = req.body;
+  const username = sanitizeUsernameInput(req.body?.username);
+  const email = sanitizeEmailInput(req.body?.email);
+  const password = sanitizePasswordInput(req.body?.password);
+
   if (!username || !email || !password) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
+  if (!isValidEmailFormat(email)) {
+    return res.status(400).json({ message: "Invalid email format." });
+  }
+
+  if (!isValidUsername(username)) {
+    return res.status(400).json({
+      message:
+        "Username must be 3-30 chars and use letters, numbers, spaces, dot, underscore, or hyphen.",
+    });
+  }
+
+  if (password.length < 8) {
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 8 characters." });
+  }
+
+  if (password !== password.trim()) {
+    return res
+      .status(400)
+      .json({ message: "Password cannot start or end with spaces." });
+  }
+
   try {
-    // Check if user exists
+    // Check duplicate email/username up front to avoid generic DB errors.
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email already registered." });
+    }
+
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(409).json({ message: "Username already taken." });
     }
 
     console.log("Signup attempt:", {
@@ -86,7 +144,9 @@ router.post("/login", async (req, res) => {
   console.log("Login route hit");
   console.log("Request body:", req.body);
 
-  const { email, password } = req.body;
+  const email = sanitizeEmailInput(req.body?.email);
+  const password = sanitizePasswordInput(req.body?.password);
+
   if (!email || !password) {
     console.log("Missing credentials:", {
       email: !!email,
@@ -95,6 +155,10 @@ router.post("/login", async (req, res) => {
     return res
       .status(400)
       .json({ message: "Email and password are required." });
+  }
+
+  if (!isValidEmailFormat(email)) {
+    return res.status(400).json({ message: "Invalid email format." });
   }
 
   try {

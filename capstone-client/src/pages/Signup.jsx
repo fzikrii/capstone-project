@@ -2,24 +2,82 @@ import React, {useState} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import bgwave from "../assets/bgwave.png";
 
+const stripControlChars = (value) => value.replace(/[\u0000-\u001F\u007F]/g, "");
+
+const sanitizeEmailInput = (value) =>
+  stripControlChars(String(value || "").normalize("NFKC")).trim().toLowerCase();
+
+const sanitizeUsernameInput = (value) =>
+  stripControlChars(String(value || "").normalize("NFKC"))
+    .replace(/[<>]/g, "")
+    .trim()
+    .replace(/\s+/g, " ");
+
+const sanitizePasswordInput = (value) =>
+  stripControlChars(String(value || "").normalize("NFKC"));
+
+const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isValidUsername = (username) => /^[a-zA-Z0-9_. -]{3,30}$/.test(username);
+
 const BACKEND_URL = 'http://localhost:5000';
 
 //
-const Signup = ({ setView }) => {
+const Signup = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setMessage('');
+
+    const normalizedUsername = sanitizeUsernameInput(username);
+    const normalizedEmail = sanitizeEmailInput(email);
+    const normalizedPassword = sanitizePasswordInput(password);
+    const normalizedConfirmPassword = sanitizePasswordInput(confirmPassword);
+
+    if (!normalizedUsername || !normalizedEmail || !normalizedPassword) {
+      setMessage('All fields are required.');
+      return;
+    }
+
+    if (!isValidEmailFormat(normalizedEmail)) {
+      setMessage('Please enter a valid email address.');
+      return;
+    }
+
+    if (!isValidUsername(normalizedUsername)) {
+      setMessage('Username must be 3-30 chars and use letters, numbers, spaces, dot, underscore, or hyphen.');
+      return;
+    }
+
+    if (normalizedPassword !== normalizedConfirmPassword) {
+      setMessage('Passwords do not match.');
+      return;
+    }
+
+    if (normalizedPassword !== normalizedPassword.trim()) {
+      setMessage('Password cannot start or end with spaces.');
+      return;
+    }
+
+    if (normalizedPassword.length < 8) {
+      setMessage('Password must be at least 8 characters.');
+      return;
+    }
+
     try {
       const response = await fetch(`${BACKEND_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({
+          username: normalizedUsername,
+          email: normalizedEmail,
+          password: normalizedPassword,
+        }),
       });
 
       const data = await response.json();
@@ -137,6 +195,8 @@ const Signup = ({ setView }) => {
               <input
                 type="password"
                 id="confirm-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B1C47]"
                 placeholder="Re-enter your password"
                 required
@@ -149,6 +209,16 @@ const Signup = ({ setView }) => {
               Sign Up
             </button>
           </form>
+
+          {message && (
+            <div
+              className={`mt-4 text-center text-sm ${
+                message.includes("successful") ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {message}
+            </div>
+          )}
 
           <div className="my-6 flex items-center">
           <div className="flex-grow border-t border-gray-300"></div>

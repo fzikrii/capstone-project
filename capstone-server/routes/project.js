@@ -4,6 +4,7 @@ import Project from '../models/projects.model.js';
 import Task from '../models/tasks.model.js';
 import mongoose from 'mongoose';
 import ScheduleEvent from '../models/scheduleEvent.model.js';
+import { recomputeAndPersistBountyRewards } from '../utils/bountyRewards.js';
 
 const router = express.Router();
 
@@ -127,6 +128,11 @@ router.put('/tasks/:taskId', async (req, res) => {
         // --- END SCHEDULE LOGIC ---
 
         const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, { new: true });
+
+        if (taskToUpdate.assignedTo) {
+            await recomputeAndPersistBountyRewards(taskToUpdate.assignedTo);
+        }
+
         res.json(updatedTask);
 
     } catch (err) {
@@ -155,6 +161,10 @@ router.delete('/tasks/:taskId', async (req, res) => {
         
         // Step 3: Delete the task itself
         await Task.findByIdAndDelete(taskId);
+
+        if (task.assignedTo) {
+            await recomputeAndPersistBountyRewards(task.assignedTo);
+        }
 
         res.status(200).json({ message: 'Task and associated schedule event deleted successfully.' });
 

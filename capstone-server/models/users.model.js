@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
     ownedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }],
     memberProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }],
+
+    // Bounty progression fields
+    bountyPoints: { type: Number, default: 0 },
+    bountyTitle: { type: String, default: "Rising Contributor" },
+    bountyCompletedCount: { type: Number, default: 0 },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

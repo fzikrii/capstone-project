@@ -5,6 +5,19 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5000/bounty'; // Your backend bounty URL
 
+const stripControlChars = (value) => String(value || "").replace(/[\u0000-\u001F\u007F]/g, "");
+
+const sanitizeSearchInput = (value) => stripControlChars(value).normalize("NFKC").trimStart();
+
+const DEFAULT_PROGRESS = {
+    doneCount: 0,
+    totalAssigned: 0,
+    taskPoints: 0,
+    volumeBonus: 0,
+    totalPoints: 0,
+    highlightTitle: "Rising Contributor",
+};
+
 // --- A helper to create dynamic tags from task data ---
 const generateTags = (bounty) => {
     const tags = [];
@@ -66,11 +79,14 @@ const BountyBoard = () => {
     const [bounties, setBounties] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [claimStatus, setClaimStatus] = useState("");
+    const [isClaiming, setIsClaiming] = useState(false);
 
     // State for UI controls
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedBounty, setSelectedBounty] = useState(null);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [myProgress, setMyProgress] = useState(DEFAULT_PROGRESS);
 
     const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
@@ -79,8 +95,20 @@ const BountyBoard = () => {
         const fetchBounties = async () => {
             setIsLoading(true);
             try {
-                const response = await axios.get(API_BASE_URL, { withCredentials: true });
-                setBounties(response.data);
+                const userId = localStorage.getItem("userId");
+                const requests = [
+                    axios.get(API_BASE_URL, { withCredentials: true }),
+                    axios.get(`${API_BASE_URL}/progress/me`, { withCredentials: true }),
+                ];
+
+                if (userId) {
+                    requests.push(axios.get(`${API_BASE_URL}/user/${userId}`, { withCredentials: true }));
+                }
+
+                const [bountyResponse, progressResponse] = await Promise.all(requests);
+
+                setBounties(Array.isArray(bountyResponse.data) ? bountyResponse.data : []);
+                setMyProgress({ ...DEFAULT_PROGRESS, ...progressResponse.data });
                 setError(null);
             } catch (err) {
                 console.error("Failed to fetch bounties:", err);
@@ -95,27 +123,35 @@ const BountyBoard = () => {
     // Filter bounties based on search term
     const filteredBounties = useMemo(() => {
         if (!searchTerm) return bounties;
+        const normalizedSearch = searchTerm.toLowerCase();
         return bounties.filter(bounty =>
-            bounty.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (bounty.description && bounty.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (bounty.project && bounty.project.name.toLowerCase().includes(searchTerm.toLowerCase()))
+            bounty.title.toLowerCase().includes(normalizedSearch) ||
+            (bounty.description && bounty.description.toLowerCase().includes(normalizedSearch)) ||
+            (bounty.project && bounty.project.name.toLowerCase().includes(normalizedSearch))
         );
     }, [bounties, searchTerm]);
 
     // Function to handle claiming a bounty
     const handleClaimBounty = async (bountyId) => {
-        if (!bountyId) return;
+        if (!bountyId || isClaiming) return;
+        setIsClaiming(true);
+        setClaimStatus("");
         try {
             const response = await axios.post(`${API_BASE_URL}/accept/${bountyId}`, {}, { withCredentials: true });
             
             // On success, remove the claimed bounty from the UI
             setBounties(currentBounties => currentBounties.filter(b => b._id !== bountyId));
+            if (response.data?.progress) {
+                setMyProgress({ ...DEFAULT_PROGRESS, ...response.data.progress });
+            }
             setSelectedBounty(null); // Close the modal
-            alert(response.data.message || "Bounty claimed successfully!");
+            setClaimStatus(response.data.message || "Task transferred to your queue.");
 
         } catch (error) {
             console.error("Failed to claim bounty:", error);
-            alert(error.response?.data?.message || "An error occurred while claiming the bounty.");
+            setClaimStatus(error.response?.data?.message || "An error occurred while claiming the bounty.");
+        } finally {
+            setIsClaiming(false);
         }
     };
 
@@ -166,9 +202,31 @@ const BountyBoard = () => {
                     <div className="text-center mb-12">
                         <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">Bounty Board</h1>
                         <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                            Discover exciting projects, complete tasks, and earn rewards. Begin your coding adventure here!
+                            Transfer stuck tasks to your queue, finish them quickly, and earn points to unlock your highlight title.
                         </p>
                     </div>
+
+                    <section className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Your Highlight Title</p>
+                            <p className="mt-2 text-2xl font-extrabold text-sky-700">{myProgress.highlightTitle}</p>
+                            <p className="mt-2 text-sm text-slate-600">
+                                {myProgress.totalPoints} pts from {myProgress.doneCount} completed transferred tasks.
+                            </p>
+                        </div>
+                        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Scoring Breakdown</p>
+                            <p className="mt-2 text-sm text-slate-700">Speed & completion points: <span className="font-bold">{myProgress.taskPoints}</span></p>
+                            <p className="mt-1 text-sm text-slate-700">Volume bonus (every 3 tasks): <span className="font-bold">{myProgress.volumeBonus}</span></p>
+                            <p className="mt-1 text-sm text-slate-700">Assigned bounty tasks: <span className="font-bold">{myProgress.totalAssigned}</span></p>
+                        </div>
+                    </section>
+
+                    {claimStatus && (
+                        <div className="mb-8 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+                            {claimStatus}
+                        </div>
+                    )}
 
                     {/* =================================== */}
                     {/* SEARCH BAR SECTION - FULLY INCLUDED */}
@@ -178,7 +236,7 @@ const BountyBoard = () => {
                             type="text"
                             placeholder="Search bounties by title, description, or project name..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => setSearchTerm(sanitizeSearchInput(e.target.value))}
                             className="w-full px-5 py-3 border border-slate-300 rounded-lg text-base bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-shadow"
                         />
                     </div>
@@ -204,7 +262,9 @@ const BountyBoard = () => {
                         </p>
                         <div className="flex justify-end gap-3 mt-6 border-t border-slate-200 pt-6">
                             <button onClick={() => setSelectedBounty(null)} className="px-5 py-2 bg-slate-200 rounded-lg font-semibold text-slate-800 hover:bg-slate-300 transition-colors">Close</button>
-                            <button onClick={() => handleClaimBounty(selectedBounty._id)} className="px-5 py-2 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition-colors shadow-sm">Claim Bounty</button>
+                            <button disabled={isClaiming} onClick={() => handleClaimBounty(selectedBounty._id)} className="px-5 py-2 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
+                                {isClaiming ? 'Transferring...' : 'Transfer Task'}
+                            </button>
                         </div>
                     </div>
                 )}

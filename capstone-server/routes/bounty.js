@@ -2,6 +2,7 @@
 import express from "express";
 import Task from "../models/tasks.model.js";
 import User from "../models/users.model.js";
+import { recomputeAndPersistBountyRewards } from "../utils/bountyRewards.js";
 const router = express.Router();
 
 // GET /bounty - Get all unassigned tasks that are STUCK
@@ -38,8 +39,13 @@ router.post("/accept/:taskId", async (req, res) => {
         await task.save();
 
         await User.findByIdAndUpdate(userId, { $addToSet: { tasks: task._id } });
+        const progress = await recomputeAndPersistBountyRewards(userId);
 
-        res.json({ message: "Bounty claimed successfully and moved to 'ToDo'.", task });
+        res.json({
+            message: "Bounty claimed successfully and moved to 'ToDo'.",
+            task,
+            progress,
+        });
     } catch (err) {
         res.status(500).json({ message: "Server error.", error: err.message });
     }
@@ -54,6 +60,17 @@ router.get("/user/:userId", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Server error.", error: err.message });
   }
+});
+
+router.get("/progress/me", async (req, res) => {
+    try {
+        const progress = await recomputeAndPersistBountyRewards(req.user._id);
+        return res.json(progress);
+    } catch (err) {
+        return res
+            .status(500)
+            .json({ message: "Failed to fetch bounty progress.", error: err.message });
+    }
 });
 
 export default router;
